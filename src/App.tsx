@@ -1,39 +1,64 @@
 import React from 'react'
-import { Link, Route, Switch } from 'wouter'
-import Home from './components/Home'
-import Learn from './components/Learn'
-import Settings from './components/Settings'
+import { Link, Route, Switch, useLocation } from 'wouter'
+import Home from './pages/Home'
+import Learn from './pages/Learn'
+import Settings from './pages/Settings'
 
-const App: React.FC = () => {
+export const App: React.FC = () => {
+  const [location, setLocation] = useLocation()
+  console.log('location', location)
+
+  // Redirect to home if the current location is the root
+  React.useEffect(() => {
+    if (location === '/index.html') {
+      setLocation('/home')
+    }
+  }, [location, setLocation])
+
   return (
-    <div className="p-4">
-      <nav className="mb-4">
-        <ul className="flex space-x-4">
+    <div className="w-[350px] h-[500px] flex flex-col bg-gray-50">
+      <header className="bg-blue-600 text-white p-4">
+        <h1 className="text-2xl font-bold">Lexa</h1>
+        <p className="text-sm">Your personal language learning assistant</p>
+      </header>
+
+      <nav className="bg-white shadow-md">
+        <ul className="flex justify-around p-2">
           <li>
-            <Link href="/">
-              <a className="text-blue-500 hover:underline">Home</a>
+            <Link href="/home">
+              <a className="text-blue-600 hover:text-blue-800 font-medium">
+                Home
+              </a>
             </Link>
           </li>
           <li>
             <Link href="/learn">
-              <a className="text-blue-500 hover:underline">Learn</a>
+              <a className="text-blue-600 hover:text-blue-800 font-medium">
+                Learn
+              </a>
             </Link>
           </li>
           <li>
             <Link href="/settings">
-              <a className="text-blue-500 hover:underline">Settings</a>
+              <a className="text-blue-600 hover:text-blue-800 font-medium">
+                Settings
+              </a>
             </Link>
           </li>
         </ul>
       </nav>
 
-      <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/learn" component={Learn} />
-        <Route path="/settings" component={Settings} />
-      </Switch>
+      <main className="flex-grow overflow-y-auto p-4">
+        <Switch>
+          <Route path="/home" component={Home} />
+          <Route path="/learn" component={Learn} />
+          <Route path="/settings" component={Settings} />
+        </Switch>
+      </main>
+
+      <footer className="bg-gray-100 p-2 text-center text-sm text-gray-600">
+        Lexa © 2024 - Expand your vocabulary while browsing
+      </footer>
     </div>
   )
 }
-
-export default App
