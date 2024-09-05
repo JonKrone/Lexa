@@ -1,60 +1,79 @@
+import { mountLexaRoot } from './components/LexaPhrase/mountLexaRoot'
+import { extractUsefulText } from './utils/extractUsefulText'
+import { isCurrentSiteIgnored } from './utils/storage'
+
 console.log('Content script loaded')
 
 // Your content script logic will go here
 // For example, you might want to scan the page for words in the target language
 
-document.body.addEventListener('mouseup', () => {
-  const selectedText = window.getSelection()?.toString().trim()
-  if (selectedText) {
-    // Here you could send the selected text to your background script
-    // for translation or to add to the user's vocabulary list
-    chrome.runtime.sendMessage({ type: 'SELECTED_TEXT', text: selectedText })
-  }
-})
+function replaceTextInElement(
+  element: HTMLElement,
+  searchText: string,
+  _replacementHTML: string,
+) {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null)
+  const nodesToReplace = []
+  let node
 
-setTimeout(() => {
-  function replaceTextWithComponent(node: Node) {
-    console.log('replaceTextWithComponent', node)
-    if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.textContent || ''
-      // This is a simplified example. In reality, you'd have a more sophisticated
-      // mechanism to decide which words to replace.
-      const words = text.split(/\s+/)
-      const fragment = document.createDocumentFragment()
-
-      words.forEach((word) => {
-        if (shouldReplace(word)) {
-          const lexaWord = document.createElement('lexa-word')
-          lexaWord.setAttribute('data-original', word)
-          lexaWord.setAttribute('data-translation', translate(word))
-          fragment.appendChild(lexaWord)
-        } else {
-          fragment.appendChild(document.createTextNode(word + ' '))
-        }
-      })
-
-      if (node.parentNode) {
-        node.parentNode.replaceChild(fragment, node)
-      }
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.childNodes) {
-      node.childNodes.forEach(replaceTextWithComponent)
+  // Find all text nodes containing the search text
+  while ((node = walker.nextNode())) {
+    if (node.nodeValue && node.nodeValue.includes(searchText)) {
+      nodesToReplace.push(node)
     }
   }
 
-  // Helper functions (to be implemented)
-  function shouldReplace(word: string): boolean {
-    // Logic to determine if a word should be replaced
-    // This could involve checking against a list of words to translate,
-    // or using some heuristic based on the user's learning level
-    return Math.random() < 0.1 // Example: replace 10% of words randomly
-  }
+  // Replace the text in each found node
+  nodesToReplace.forEach((textNode) => {
+    const parent = textNode.parentNode
+    const parts = textNode.nodeValue!.split(searchText)
+    console.log('parts', parts)
+    const fragment = document.createDocumentFragment()
 
-  function translate(word: string): string {
-    // Logic to translate the word
-    // This could involve calling an API or checking against a local dictionary
-    return `Translated: ${word}` // Placeholder implementation
-  }
+    parts.forEach((part, index) => {
+      fragment.appendChild(document.createTextNode(part))
+      if (index < parts.length - 1) {
+        const span = document.createElement('span')
+        fragment.appendChild(span)
+        mountLexaRoot(span, part)
+        // span.className = 'lexa-root-node'
+        // span.innerHTML = replacementHTML
+      }
+    })
 
-  // Start the replacement process
-  replaceTextWithComponent(document.body)
-}, 1000)
+    parent?.replaceChild(fragment, textNode)
+  })
+}
+
+async function initializeLexaExtension() {
+  const isIgnored = await isCurrentSiteIgnored()
+  if (!isIgnored) {
+    // Initialize Lexa functionality
+    const element = document.querySelector('#add-a-content-script')
+    console.log('node', element)
+    if (element && element.isConnected) {
+      // mountLexaPhrase(element as HTMLElement, 'script')
+      replaceTextInElement(element as HTMLElement, 'script', 'guion')
+      return
+    }
+    console.log('Lexa is active on this site')
+    // Add your Lexa initialization code here
+    const markdown = extractUsefulText(document.body)
+    console.log('Markdown:', markdown)
+  } else {
+    console.log('Lexa is disabled for this site')
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeLexaExtension)
+} else {
+  initializeLexaExtension()
+}
+
+// Listen for updates to the ignored sites list
+chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
+  if (message.type === 'IGNORED_SITES_UPDATED') {
+    initializeLexaExtension()
+  }
+})

@@ -3,6 +3,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import * as Label from '@radix-ui/react-label'
 import * as Select from '@radix-ui/react-select'
 import React from 'react'
+import { IgnoredSitesManager } from '../components/IgnoredSitesManage'
 
 const Settings: React.FC = () => {
   return (
@@ -43,6 +44,7 @@ const Settings: React.FC = () => {
             </Select.Portal>
           </Select.Root>
         </div>
+        <IgnoredSitesManager />
         <div className="flex justify-between items-center">
           <Label.Root htmlFor="daily-word-goal" className="text-gray-600">
             Daily Word Goal
