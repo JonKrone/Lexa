@@ -1,13 +1,9 @@
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, forwardRef, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import styles from '../index.css?inline'
-// console.log('styles', styles)
-console.log('italic?', styles.includes('italic'))
-console.log('uppercase?', styles.includes('uppercase'))
 console.log('not-italic?', styles.includes('not-italic'))
-
-// const ShadowDomStyles = `/* @vite-plugin-inject-css */`
+console.log('decoration-solid?', styles.includes('decoration-solid'))
 
 interface Props {
   element: HTMLElement
@@ -15,88 +11,61 @@ interface Props {
   styleContent: string
 }
 
-const useDynamicCSSImport = () => {
-  const [cssContent, setCssContent] = useState('')
-
-  useEffect(() => {
-    const loadCSS = async () => {
-      try {
-        // TODO: This doesn't work in dev mode.
-        // const { default: manifest } = await import(
-        //   '/dist/.vite/manifest.json' as string
-        // )
-        // const cssFileName = manifest['index.html'].css[0]
-        // const response = await fetch(chrome.runtime.getURL(`${cssFileName}`))
-        // const css = await response.text()
-        setCssContent('css')
-      } catch (error) {
-        console.error('Failed to load CSS:', error)
-      }
-    }
-
-    loadCSS()
-  }, [])
-
-  return cssContent
-}
-
 const useStylesheet = () => {
-  // const css = useDynamicCSSImport()
   const stylesheet = useRef<CSSStyleSheet>(new CSSStyleSheet())
 
   useEffect(() => {
-    stylesheet.current.replaceSync(`${styles} span{font-size: 24px;}`)
-    // if (css) {
-    //   console.log('css', css.length, css.includes('decoration-solid'))
-    //   console.log('stylesheet', stylesheet.current)
-    // }
+    stylesheet.current.replaceSync(`${styles}`)
   }, [styles])
 
   return stylesheet.current
 }
 
-export const ShadowRootComponent: FC<Props> = ({
-  element,
-  children,
-  styleContent,
-}) => {
-  const stylesheet = useStylesheet()
-  const host = useRef<HTMLElement | null>(null)
-  const shadowRoot = useRef<ShadowRoot | null>(null)
-  const [isReady, setIsReady] = useState(false)
-
-  useEffect(() => {
-    if (!host.current) {
-      // host.current = element
-      host.current = document.createElement('span')
-      host.current.setAttribute('class', 'lexa-shadow-root')
-      element.appendChild(host.current)
-    }
-
-    if (!shadowRoot.current) {
-      shadowRoot.current = host.current.attachShadow({ mode: 'open' })
-
-      // TODO: Convert to an constructed StyleSheet that can be reused across instances.
-      const styles = document.createElement('style')
-      styles.textContent = styleContent
-      shadowRoot.current.adoptedStyleSheets = [stylesheet]
-      shadowRoot.current.appendChild(styles)
-
-      setIsReady(true)
-    }
-
-    return () => {
-      if (host.current && host.current.parentNode === element) {
-        element.removeChild(host.current)
+export const ShadowRootComponent: FC<Props> = forwardRef(
+  ({ element, children, styleContent }, ref) => {
+    const stylesheet = useStylesheet()
+    const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null)
+    const debug = element.id === 'lexa-hover-card-container'
+    if (debug) {
+      console.log(
+        'shadowRoot',
+        shadowRoot,
+        shadowRoot?.adoptedStyleSheets[0].cssRules,
+      )
+      for (const rule of shadowRoot?.adoptedStyleSheets[0]?.cssRules ?? []) {
+        if (
+          rule?.cssText?.includes('text-red') ||
+          rule?.cssText?.includes('decoration-solid')
+        ) {
+          console.log('rule', rule.cssText)
+        }
       }
-      shadowRoot.current = null
-      host.current = null
     }
-  }, [styleContent, stylesheet])
 
-  if (!isReady || !shadowRoot.current) {
-    return null
-  }
+    useEffect(() => {
+      const shdwRoot = element.shadowRoot
+        ? element.shadowRoot
+        : element.attachShadow({ mode: 'open' })
+      setShadowRoot(shdwRoot)
 
-  return createPortal(children, shadowRoot.current)
-}
+      if (shdwRoot) {
+        shdwRoot.adoptedStyleSheets = [stylesheet]
+
+        // Find existing style tag or create a new one
+        let styleElement = shdwRoot.querySelector('style[data-lexa-styles]')
+        if (!styleElement) {
+          styleElement = document.createElement('style')
+          styleElement.setAttribute('data-lexa-styles', '')
+          shdwRoot.appendChild(styleElement)
+        }
+
+        styleElement.textContent = styles + ' ' + styleContent
+        // console.log('textContent', styleElement.textContent)
+      }
+    }, [element, styleContent, stylesheet])
+
+    if (!shadowRoot) return null
+
+    return createPortal(children, shadowRoot)
+  },
+)

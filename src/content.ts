@@ -33,6 +33,7 @@ function replaceTextInElement(
       fragment.appendChild(document.createTextNode(part))
       if (index < parts.length - 1) {
         const span = document.createElement('span')
+        span.className = 'lexa-root-node'
         fragment.appendChild(span)
         mountLexaRoot(span, part)
         // span.className = 'lexa-root-node'
@@ -46,21 +47,28 @@ function replaceTextInElement(
 
 async function initializeLexaExtension() {
   const isIgnored = await isCurrentSiteIgnored()
-  if (!isIgnored) {
-    // Initialize Lexa functionality
-    const element = document.querySelector('#add-a-content-script')
-    if (element && element.isConnected) {
-      // mountLexaPhrase(element as HTMLElement, 'script')
-      replaceTextInElement(element as HTMLElement, 'script', 'guion')
-      return
-    }
-    console.log('Lexa is active on this site')
-    // Add your Lexa initialization code here
-    const markdown = extractUsefulText(document.body)
-    console.log('Markdown:', markdown)
-  } else {
+
+  if (isIgnored) {
     console.log('Lexa is disabled for this site')
+    return
   }
+
+  // Initialize Lexa functionality
+  // Add a container element for the hover card
+  const container = document.createElement('div')
+  container.id = 'lexa-hover-card-container'
+  document.body.appendChild(container)
+
+  const element = document.querySelector('#add-a-content-script')
+  if (element && element.isConnected) {
+    // mountLexaPhrase(element as HTMLElement, 'script')
+    replaceTextInElement(element as HTMLElement, 'script', 'guion')
+    return
+  }
+  console.log('Lexa is active on this site')
+  // Add your Lexa initialization code here
+  const markdown = extractUsefulText(document.body)
+  console.log('Markdown:', markdown)
 }
 
 if (document.readyState === 'loading') {

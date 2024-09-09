@@ -5,7 +5,9 @@ import { LexaRoot } from './LexaRoot'
 export function mountLexaRoot(element: HTMLElement, phrase: string) {
   ReactDOM.createRoot(element).render(
     <React.StrictMode>
-      <LexaRoot element={element} originalPhrase={phrase} />
+      <div className="text-red-500">
+        <LexaRoot element={element} originalPhrase={phrase} />
+      </div>
     </React.StrictMode>,
   )
 }

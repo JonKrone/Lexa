@@ -2,9 +2,6 @@ import { FC } from 'react'
 import { ShadowRootComponent } from '../ShadowRootComponent'
 import { LexaBody } from './LexaBody'
 
-// import styles from './../../../dist/src/index.css.js'
-// console.log('styles', styles)
-
 interface Props {
   element: HTMLElement
   originalPhrase: string
@@ -31,7 +28,7 @@ export const LexaRoot: FC<Props> = ({
       `}
     >
       <span className="lexa-root-node">
-        <span className="lexa-body ordinal oldstyle-nums">
+        <span className="lexa-body ">
           <LexaBody originalPhrase={originalPhrase} translation={translation} />
         </span>
       </span>

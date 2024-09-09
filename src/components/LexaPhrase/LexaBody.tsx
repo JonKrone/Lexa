@@ -1,7 +1,8 @@
 import * as HoverCard from '@radix-ui/react-hover-card'
 import { Button, Card, Theme } from '@radix-ui/themes'
 import { Check, Star, X } from 'lucide-react'
-import { FC } from 'react'
+import { FC, useRef, useState } from 'react'
+import { ShadowRootComponent } from '../ShadowRootComponent'
 
 interface Props {
   originalPhrase: string
@@ -12,22 +13,11 @@ export const LexaBody: FC<Props> = ({
   originalPhrase,
   translation = 'guion',
 }) => {
-  // console.log('element', element)
-  // prevElement = element.cloneNode(true) as HTMLElement
-  // console.log('prevElement', prevElement)
-
-  // To replace the original phrase with the translation, we need to find the substring that matches the original phrase and replace it with the the below component.
-  // const text = element.textContent!
-  // console.log('text', text)
-  // const index = text.indexOf(originalPhrase)
-  // console.log('index', index)
-  // const substring = text.substring(index, index + originalPhrase.length)
-  // console.log('substring', substring)
-
-  // console.log('html:', prevElement.innerHTML)
-  // replaceTextInElement(prevElement, originalPhrase, translation)
-  // console.log('html:', prevElement.innerHTML)
-  // return null
+  const [shadowRootRef, setShadowRootRef] = useState<HTMLDivElement | null>(
+    null,
+  )
+  // console.log('shadowRootRef', shadowRootRef)
+  console.log('shadowRootRef', shadowRootRef)
 
   return (
     <span
@@ -40,25 +30,40 @@ export const LexaBody: FC<Props> = ({
         width: 'max-content',
         height: 'max-content',
         transition: 'all 250ms linear 0ms',
-        boxShadow:
-          'rgba(202, 228, 237, 0.5) 2px 0px 0px 0px, rgba(202, 228, 237, 0.5) -2px 0px 0px 0px',
-        backgroundColor: 'rgba(202, 228, 237, 0.5)',
+        // boxShadow:
+        // 'rgba(202, 228, 237, 0.5) 2px 0px 0px 0px, rgba(202, 228, 237, 0.5) -2px 0px 0px 0px',
+        // backgroundColor: 'rgba(202, 228, 237, 0.5)',
       }}
     >
-      <HoverCard.Root>
+      <HoverCard.Root defaultOpen>
         <HoverCard.Trigger asChild>
           <span>{translation}</span>
         </HoverCard.Trigger>
-        <HoverCard.Portal>
-          <Theme>
-            <LexaHoverCard
-              originalText={originalPhrase}
-              translatedText={translation}
-              onStar={() => console.log('Starred')}
-              onIgnore={() => console.log('Ignored')}
-              onMarkKnown={() => console.log('Marked as known')}
-            />
-          </Theme>
+        <HoverCard.Portal
+          container={document.getElementById('lexa-hover-card-container')}
+        >
+          <ShadowRootComponent
+            element={document.getElementById('lexa-hover-card-container')!}
+            styleContent={`
+                .lexa-root-node {
+                  all: unset;
+                  will-change: opacity;
+                  transition-property: opacity;
+                  transition-duration: 200ms;
+                  transition-timing-function: ease-in-out;
+                  opacity: 1;
+                  `}
+          >
+            <Theme>
+              <LexaHoverCard
+                originalText={originalPhrase}
+                translatedText={translation}
+                onStar={() => console.log('Starred')}
+                onIgnore={() => console.log('Ignored')}
+                onMarkKnown={() => console.log('Marked as known')}
+              />
+            </Theme>
+          </ShadowRootComponent>
         </HoverCard.Portal>
       </HoverCard.Root>
     </span>
@@ -88,16 +93,32 @@ export const LexaHoverCard = (
     onMarkKnown: () => console.log('Marked as known'),
   },
 ) => {
+  const hoverCardPortalRef = useRef<HTMLDivElement>(null)
+  // <ShadowRootComponent
+  //     element={hoverCardPortalRef.current}
+  //     styleContent={`
+  //       .lexa-root-node {
+  //         all: unset;
+  //         will-change: opacity;
+  //         transition-property: opacity;
+  //         transition-duration: 200ms;
+  //         transition-timing-function: ease-in-out;
+  //         opacity: 1;
+  //         `}
+  //   >
+
   return (
     <HoverCard.Content
-      className="w-72 p-0 bg-background border border-border rounded-md shadow-md"
+      className="w-72 p-0 bg-background border border-border rounded-md shadow-md "
       sideOffset={5}
     >
       <Card>
         <div className="flex flex-col space-y-2">
           <div className="flex justify-between items-start">
             <div>
-              <p className="font-semibold">{translatedText}</p>
+              <p className="font-semibold text-red-500 !text-red-500">
+                {translatedText}
+              </p>
               <p className="text-sm text-muted-foreground">{originalText}</p>
             </div>
             <div className="flex space-x-1">
