@@ -31,7 +31,7 @@ export const LexaBody: FC<Props> = ({
 
   return (
     <span
-      className="lexa-body"
+      className="lexa-body text-start"
       style={{
         display: 'inline-block',
         borderRadius: '2px',
@@ -101,6 +101,9 @@ export const LexaHoverCard = (
               <p className="text-sm text-muted-foreground">{originalText}</p>
             </div>
             <div className="flex space-x-1">
+              {/**
+               * TODO: Add a button to expand the translation boundary, i.e. translate the whole sentence or next word.
+               */}
               <Button
                 variant="outline"
                 size="1"

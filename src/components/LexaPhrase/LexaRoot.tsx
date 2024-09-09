@@ -31,7 +31,7 @@ export const LexaRoot: FC<Props> = ({
       `}
     >
       <span className="lexa-root-node">
-        <span className="lexa-body text-red-500">
+        <span className="lexa-body ordinal oldstyle-nums">
           <LexaBody originalPhrase={originalPhrase} translation={translation} />
         </span>
       </span>

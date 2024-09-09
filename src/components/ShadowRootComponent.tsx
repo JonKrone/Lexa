@@ -1,7 +1,13 @@
 import { FC, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-const ShadowDomStyles = `/* @vite-plugin-inject-css */`
+import styles from '../index.css?inline'
+// console.log('styles', styles)
+console.log('italic?', styles.includes('italic'))
+console.log('uppercase?', styles.includes('uppercase'))
+console.log('not-italic?', styles.includes('not-italic'))
+
+// const ShadowDomStyles = `/* @vite-plugin-inject-css */`
 
 interface Props {
   element: HTMLElement
@@ -15,12 +21,14 @@ const useDynamicCSSImport = () => {
   useEffect(() => {
     const loadCSS = async () => {
       try {
-        // @ts-expect-error Importing from dist is not typed.
-        const { default: manifest } = await import('/dist/.vite/manifest.json')
-        const cssFileName = manifest['index.html'].css[0]
-        const response = await fetch(chrome.runtime.getURL(`${cssFileName}`))
-        const css = await response.text()
-        setCssContent(css)
+        // TODO: This doesn't work in dev mode.
+        // const { default: manifest } = await import(
+        //   '/dist/.vite/manifest.json' as string
+        // )
+        // const cssFileName = manifest['index.html'].css[0]
+        // const response = await fetch(chrome.runtime.getURL(`${cssFileName}`))
+        // const css = await response.text()
+        setCssContent('css')
       } catch (error) {
         console.error('Failed to load CSS:', error)
       }
@@ -33,16 +41,16 @@ const useDynamicCSSImport = () => {
 }
 
 const useStylesheet = () => {
-  const css = useDynamicCSSImport()
+  // const css = useDynamicCSSImport()
   const stylesheet = useRef<CSSStyleSheet>(new CSSStyleSheet())
 
   useEffect(() => {
-    if (css) {
-      console.log('css', css.length)
-      stylesheet.current.replaceSync(`${css} span{font-size: 24px;}`)
-      console.log('stylesheet', stylesheet.current)
-    }
-  }, [css])
+    stylesheet.current.replaceSync(`${styles} span{font-size: 24px;}`)
+    // if (css) {
+    //   console.log('css', css.length, css.includes('decoration-solid'))
+    //   console.log('stylesheet', stylesheet.current)
+    // }
+  }, [styles])
 
   return stylesheet.current
 }
@@ -89,8 +97,6 @@ export const ShadowRootComponent: FC<Props> = ({
   if (!isReady || !shadowRoot.current) {
     return null
   }
-
-  console.log('rendering')
 
   return createPortal(children, shadowRoot.current)
 }

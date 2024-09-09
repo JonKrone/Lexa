@@ -27,7 +27,6 @@ function replaceTextInElement(
   nodesToReplace.forEach((textNode) => {
     const parent = textNode.parentNode
     const parts = textNode.nodeValue!.split(searchText)
-    console.log('parts', parts)
     const fragment = document.createDocumentFragment()
 
     parts.forEach((part, index) => {
@@ -50,7 +49,6 @@ async function initializeLexaExtension() {
   if (!isIgnored) {
     // Initialize Lexa functionality
     const element = document.querySelector('#add-a-content-script')
-    console.log('node', element)
     if (element && element.isConnected) {
       // mountLexaPhrase(element as HTMLElement, 'script')
       replaceTextInElement(element as HTMLElement, 'script', 'guion')

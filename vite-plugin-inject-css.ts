@@ -1,5 +1,3 @@
-import fs from 'fs'
-import path from 'path'
 import { Plugin } from 'vite'
 
 const cssInjectionKeyword = '/* @vite-plugin-inject-css */'
@@ -9,17 +7,28 @@ export function vitePluginInjectCss(): Plugin {
 
   return {
     name: 'vite-plugin-inject-css',
-    // Load the CSS during build or dev
-    configResolved(config) {
-      if (config.command === 'serve') {
-        // Load the compiled CSS during dev
-        cssContent = fs.readFileSync(
-          path.resolve(__dirname, 'src', 'index.css'),
-          'utf-8',
-        )
-        console.log('cssContent', cssContent)
-      }
-    },
+
+    // Use Vite's 'transform' hook during development
+    // transform(code, id) {
+    //   this.warn(`id: ${id}`)
+    //   if (id.includes('YourShadowDOMComponentFile')) {
+    //     console.log(`Injecting CSS into ${id} during dev...`)
+
+    //     // Use Vite's CSS loader to ensure we get the processed CSS
+    //     const cssVirtualModule = `/src/style.css` // Path to your main Tailwind CSS entry file
+
+    //     // Inject the processed CSS via dynamic import for dev
+    //     return code.replace(
+    //       '/* @inject-css */',
+    //       `import('${cssVirtualModule}').then(module => {
+    //           const style = document.createElement('style');
+    //           style.textContent = module.default;
+    //           shadowRoot.appendChild(style);
+    //       });`,
+    //     )
+    //   }
+    //   return code
+    // },
     generateBundle(_, bundle) {
       const cssFiles = Object.keys(bundle).filter((key) => key.endsWith('.css'))
 
@@ -42,10 +51,5 @@ export function vitePluginInjectCss(): Plugin {
         chunk.code = chunk.code.replace(cssInjectionKeyword, cssContent)
       })
     },
-    // transform(code, id) {
-    //   if (id.endsWith('.css')) {
-    //     return { code: `export default ${JSON.stringify(code)}` }
-    //   }
-    // },
   } satisfies Plugin
 }
