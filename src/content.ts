@@ -1,4 +1,4 @@
-import { mountLexaRoot } from './components/LexaPhrase/mountLexaRoot'
+import { mountLexaRoot } from './components/LexaPhrase-mui/mountLexaRoot'
 import { extractUsefulText } from './utils/extractUsefulText'
 import { isCurrentSiteIgnored } from './utils/storage'
 
@@ -35,7 +35,7 @@ function replaceTextInElement(
         const span = document.createElement('span')
         span.className = 'lexa-root-node'
         fragment.appendChild(span)
-        mountLexaRoot(span, part)
+        mountLexaRoot(span, _replacementHTML)
         // span.className = 'lexa-root-node'
         // span.innerHTML = replacementHTML
       }

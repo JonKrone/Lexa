@@ -22,16 +22,12 @@ const useStylesheet = () => {
 }
 
 export const ShadowRootComponent: FC<Props> = forwardRef(
-  ({ element, children, styleContent }, ref) => {
+  ({ element, children, styleContent }, _ref) => {
     const stylesheet = useStylesheet()
     const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null)
     const debug = element.id === 'lexa-hover-card-container'
     if (debug) {
-      console.log(
-        'shadowRoot',
-        shadowRoot,
-        shadowRoot?.adoptedStyleSheets[0].cssRules,
-      )
+      console.log('shadowRoot', shadowRoot)
       for (const rule of shadowRoot?.adoptedStyleSheets[0]?.cssRules ?? []) {
         if (
           rule?.cssText?.includes('text-red') ||

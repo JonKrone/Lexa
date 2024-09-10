@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import { ShadowRootComponent } from '../ShadowRootComponent'
+import { ShadowRootComponent } from '../_ShadowRootComponent'
 import { LexaBody } from './LexaBody'
 
 interface Props {
