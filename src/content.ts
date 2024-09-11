@@ -37,7 +37,6 @@ function replaceTextInElement(
         fragment.appendChild(span)
         mountLexaRoot(span, _replacementHTML)
         // span.className = 'lexa-root-node'
-        // span.innerHTML = replacementHTML
       }
     })
 
