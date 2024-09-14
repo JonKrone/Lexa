@@ -29,7 +29,7 @@ turndownService.remove([
 //   replacement: (content, node) => '',
 // })
 
-export function extractUsefulText(element: Element): string {
+export function htmlToMarkdown(element: Element): string {
   // Convert HTML to Markdown directly from the element's innerHTML
   const markdown = turndownService.turndown(element.innerHTML)
 

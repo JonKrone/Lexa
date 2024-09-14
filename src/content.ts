@@ -1,5 +1,6 @@
+import { generatePageTranslations } from './ai/generatePageTranslations'
 import { mountLexaRoot } from './components/LexaPhrase-mui/mountLexaRoot'
-import { extractUsefulText } from './utils/extractUsefulText'
+import { htmlToMarkdown } from './utils/htmlToMarkdown'
 import { isCurrentSiteIgnored } from './utils/storage'
 
 console.log('Content script loaded')
@@ -50,24 +51,27 @@ async function initializeLexaExtension() {
   if (isIgnored) {
     console.log('Lexa is disabled for this site')
     return
+  } else {
+    console.log('Lexa is active on this site')
   }
 
   // Initialize Lexa functionality
-  // Add a container element for the hover card
-  const container = document.createElement('div')
-  container.id = 'lexa-hover-card-container'
-  document.body.appendChild(container)
+  // For now, just working on the crxjs.dev site for testing the extension
+  if (window.location.href.includes('https://crxjs.dev/')) {
+    const markdown = htmlToMarkdown(document.body)
+    console.log('Markdown:', markdown)
 
-  const element = document.querySelector('#add-a-content-script')
-  if (element && element.isConnected) {
-    // mountLexaPhrase(element as HTMLElement, 'script')
-    replaceTextInElement(element as HTMLElement, 'script', 'guion')
-    return
+    const result = generatePageTranslations(markdown, {
+      targetLanguage: 'Spanish',
+      learningGoals: 'Learn Spanish',
+      proficiencyLevel: 'Intermediate',
+      preferredPhraseLength: 'Short',
+      translationDensityPercent: 10,
+    })
+    console.log('Result:', result)
+
+    // replaceTextInElement(element as HTMLElement, 'script', 'guion')
   }
-  console.log('Lexa is active on this site')
-  // Add your Lexa initialization code here
-  const markdown = extractUsefulText(document.body)
-  console.log('Markdown:', markdown)
 }
 
 if (document.readyState === 'loading') {

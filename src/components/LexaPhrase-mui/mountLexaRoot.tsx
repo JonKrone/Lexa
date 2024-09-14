@@ -1,11 +1,11 @@
 import ReactDOM from 'react-dom/client'
 import { ShadowDOM } from './ShadowDOM'
-import { TranslatedSegment } from './TranslatedSegment'
+import { TranslatedSegment, TranslatedSegmentProps } from './TranslatedSegment'
 
-// Function to mount the Lexa node
-export function mountLexaRoot(node: Element, translatedText: string): void {
-  const originalText = node.textContent || ''
-
+export function mountLexaRoot(
+  node: Element,
+  details: TranslatedSegmentProps,
+): void {
   // Create a wrapper element
   const wrapper = document.createElement('span')
   wrapper.style.display = 'inline-block'
@@ -22,10 +22,7 @@ export function mountLexaRoot(node: Element, translatedText: string): void {
   // Render our React app inside the shadow DOM
   ReactDOM.createRoot(wrapper).render(
     <ShadowDOM as="span">
-      <TranslatedSegment
-        translatedText={translatedText}
-        originalText={originalText}
-      />
+      <TranslatedSegment {...details} />
     </ShadowDOM>,
   )
 }

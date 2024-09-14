@@ -41,7 +41,7 @@ export const ComplexHoverCardContent: React.FC<HoverCardProps> = ({
   const [currentTab, setCurrentTab] = useState(0)
   const [expanded, setExpanded] = useState(false)
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setCurrentTab(newValue)
   }
 
