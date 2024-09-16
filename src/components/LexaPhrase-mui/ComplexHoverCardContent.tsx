@@ -5,154 +5,215 @@ import {
   CardActions,
   CardContent,
   CardHeader,
+  Grid2,
   IconButton,
   styled,
   Tab,
   Tabs,
-  Tooltip,
+  TextField,
   Typography,
 } from '@mui/material'
+import { useQuery } from '@tanstack/react-query'
 import {
-  BookOpen,
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  PlayCircle,
-  Plus,
+  MessageSquareQuote,
+  Settings,
   Star,
+  ThumbsDown,
+  ThumbsUp,
 } from 'lucide-react'
 import React, { useState } from 'react'
+import { generateTranslationDetails } from '../../ai/generateTranslationDetails'
 
-interface HoverCardProps {
-  word: string
-  translation: string
-  partOfSpeech: string
-  example: string
-  pronunciation: string
-}
+type TabValue = 'details' | 'notes' | 'quiz'
 
-export const ComplexHoverCardContent: React.FC<HoverCardProps> = ({
-  word,
+/**
+ * TODO: Allow users to add their own notes to the translation
+ * TODO: Mastery Levels: New, Learning, Mastered based on..? Quiz progress; # of times seen; # of
+ * times marked known
+ * TODO: Translation toggle: Show/hide original word
+ * TODO: Engagement metrics like words learned; streaks; or daily goals
+ * TODO: Daily/Weekly challenges: quizzes on words learned or seen daily/weekly
+ * TODO: Report issues: incorrect translation, suggest improvements, etc
+ * TODO: Settings shortcut (new ideas: reminders for daily/weekly quizzes)
+ */
+export function ComplexHoverCardContent({
   translation,
-  partOfSpeech,
-  example,
-  pronunciation,
-}) => {
-  const [currentTab, setCurrentTab] = useState(0)
-  const [expanded, setExpanded] = useState(false)
+  original,
+  wordGender,
+  masteryLevel,
+  isFavorited,
+  onFavoriteToggle,
+}: {
+  translation: string
+  original: string
+  wordGender: string
+  masteryLevel: string
+  isFavorited: boolean
+  onFavoriteToggle: () => void
+}) {
+  const [tabValue, setTabValue] = useState<TabValue>('details')
+  const [notes, setNotes] = useState('')
+  const [thumbsUp, setThumbsUp] = useState(false)
+  const [thumbsDown, setThumbsDown] = useState(false)
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setCurrentTab(newValue)
+  const { data: translationDetails } = useQuery({
+    queryKey: ['translationDetails', translation],
+    queryFn: () => {
+      return generateTranslationDetails({
+        translation,
+        original,
+        context,
+      })
+    },
+  })
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: TabValue) => {
+    setTabValue(newValue)
+  }
+
+  const handleThumbsUp = () => {
+    setThumbsUp((prev) => !prev)
+    if (thumbsDown) setThumbsDown(false)
+  }
+
+  const handleThumbsDown = () => {
+    setThumbsDown((prev) => !prev)
+    if (thumbsUp) setThumbsUp(false)
   }
 
   return (
-    <Box sx={{ width: 350 }}>
-      <Card elevation={3}>
-        <CardHeader
-          title={
-            <Typography variant="h6" component="div">
-              {word}
-            </Typography>
-          }
-          subheader={
-            <Typography variant="body2" color="text.secondary">
-              {partOfSpeech}
-            </Typography>
-          }
-          action={
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Tooltip title="Save word">
-                <IconButton size="small">
-                  <Star />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Mark as learned">
-                <IconButton size="small">
-                  <CheckCircle />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          }
-        />
-        <CardContent>
-          <StyledTabs value={currentTab} onChange={handleTabChange}>
-            <StyledTab label="Translation" />
-            <StyledTab label="Example" />
-            <StyledTab label="Quiz" />
-          </StyledTabs>
-          <Box sx={{ mt: 2 }}>
-            {currentTab === 0 && (
-              <>
-                <Typography variant="body1">{translation}</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                  <Tooltip title="Listen to pronunciation">
-                    <IconButton size="small">
-                      <PlayCircle />
-                    </IconButton>
-                  </Tooltip>
-                  <Typography variant="body2">{pronunciation}</Typography>
-                </Box>
-              </>
-            )}
-            {currentTab === 1 && (
-              <Typography variant="body2" fontStyle="italic">
-                {example}
-              </Typography>
-            )}
-            {currentTab === 2 && (
-              <Typography variant="body2">Quiz content here...</Typography>
-            )}
-          </Box>
-        </CardContent>
-        <CardActions sx={{ justifyContent: 'space-between' }}>
-          <Tooltip title={expanded ? 'Show less context' : 'Show more context'}>
-            <Button
-              size="small"
-              startIcon={expanded ? <ChevronLeft /> : <ChevronRight />}
-              onClick={() => setExpanded(!expanded)}
-            >
-              {expanded ? 'Less' : 'More'}
-            </Button>
-          </Tooltip>
-          <Tooltip title="Add to vocabulary list">
-            <Button size="small" startIcon={<Plus />}>
-              Add
-            </Button>
-          </Tooltip>
-          <Tooltip title="Learn more about this word">
-            <Button size="small" startIcon={<BookOpen />}>
-              Learn
-            </Button>
-          </Tooltip>
-        </CardActions>
-      </Card>
-    </Box>
-  )
-}
-
-// Demo component to show the HoverCard in action
-const DemoHoverCard: React.FC = () => {
-  const sampleWord = {
-    word: 'Bonjour',
-    translation: 'Hello',
-    partOfSpeech: 'Interjection',
-    example: 'Bonjour, comment allez-vous?',
-    pronunciation: '/bɔ̃.ʒuʁ/',
-  }
-
-  return (
-    <Box
+    <Card
       sx={{
-        p: 4,
-        bgcolor: 'grey.100',
-        minHeight: '100vh',
+        width: 300,
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        flexDirection: 'column',
+        height: '100%', // Adjust height as needed
       }}
     >
-      <ComplexHoverCardContent {...sampleWord} />
-    </Box>
+      <CardHeader
+        title={
+          <Grid2 container alignItems="center" spacing={1}>
+            <Grid2>
+              <Typography variant="h6">{translation}</Typography>
+              <Typography variant="subtitle1" color="textSecondary">
+                {original} {wordGender && `(${wordGender})`}
+              </Typography>
+            </Grid2>
+            <Grid2>
+              <Grid2 container spacing={0.5}>
+                <Grid2>
+                  <IconButton onClick={onFavoriteToggle} aria-label="favorite">
+                    <Star fill={isFavorited ? 'gold' : 'gray'} />
+                  </IconButton>
+                </Grid2>
+                <Grid2>
+                  <IconButton
+                    onClick={handleThumbsUp}
+                    color={thumbsUp ? 'primary' : 'default'}
+                    aria-label="thumbs up"
+                  >
+                    <ThumbsUp />
+                  </IconButton>
+                </Grid2>
+                <Grid2>
+                  <IconButton
+                    onClick={handleThumbsDown}
+                    color={thumbsDown ? 'primary' : 'default'}
+                    aria-label="thumbs down"
+                  >
+                    <ThumbsDown />
+                  </IconButton>
+                </Grid2>
+              </Grid2>
+            </Grid2>
+          </Grid2>
+        }
+        // Removed the 'action' prop since buttons are moved to the footer
+      />
+      <CardContent sx={{ paddingTop: 0, flexGrow: 1 }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          variant="fullWidth"
+          indicatorColor="primary"
+          textColor="primary"
+        >
+          <Tab label="Details" value="details" />
+          <Tab label="Notes" value="notes" />
+          <Tab label="Quiz" value="quiz" />
+        </Tabs>
+        <Box sx={{ marginTop: 2, overflowY: 'auto', height: 250 }}>
+          {tabValue === 'details' && (
+            <Box>
+              {/* Mastery Level Indicator */}
+              <Typography variant="body2">
+                Mastery Level: {masteryLevel}
+              </Typography>
+              {/* Contextual Examples */}
+              <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                Contextual Examples
+              </Typography>
+              <Typography variant="body2">
+                {/* Placeholder for examples */}
+                - Formal usage example.
+                <br />- Informal usage example.
+              </Typography>
+              {/* Synonyms and Antonyms */}
+              <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                Synonyms & Antonyms
+              </Typography>
+              <Typography variant="body2">
+                {/* Placeholder for synonyms/antonyms */}
+                Synonyms: example1, example2
+                <br />
+                Antonyms: example3, example4
+              </Typography>
+              {/* Cultural Insights */}
+              <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                Cultural Insights
+              </Typography>
+              <Typography variant="body2">
+                {/* Placeholder for cultural insights */}
+                This word is often used in idiomatic expressions like...
+              </Typography>
+            </Box>
+          )}
+          {tabValue === 'notes' && (
+            <Box>
+              {/* Personal Notes */}
+              <Typography variant="subtitle1">Your Notes</Typography>
+              <TextField
+                variant="outlined"
+                fullWidth
+                multiline
+                minRows={6}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add your personal notes here..."
+              />
+            </Box>
+          )}
+          {tabValue === 'quiz' && (
+            <Box>
+              {/* Quick Quiz Placeholder */}
+              <Typography variant="subtitle1">Quick Quiz</Typography>
+              <Typography variant="body2">Quizzes are coming soon!</Typography>
+              <Button variant="contained" sx={{ marginTop: 2 }}>
+                Start Quiz
+              </Button>
+            </Box>
+          )}
+        </Box>
+      </CardContent>
+      <CardActions sx={{ justifyContent: 'flex-end', padding: '8px 16px' }}>
+        <IconButton aria-label="feedback">
+          <MessageSquareQuote />
+        </IconButton>
+        <IconButton aria-label="settings">
+          <Settings />
+        </IconButton>
+      </CardActions>
+    </Card>
   )
 }
 

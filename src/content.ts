@@ -1,76 +1,72 @@
-import { generatePageTranslations } from './ai/generatePageTranslations'
-import { mountLexaRoot } from './components/LexaPhrase-mui/mountLexaRoot'
+import {
+  generatePageTranslations,
+  GeneratePageTranslationsSettings,
+} from './ai/generatePageTranslations'
 import { htmlToMarkdown } from './utils/htmlToMarkdown'
+import { replaceTextSegments } from './utils/replaceTextSegments'
 import { isCurrentSiteIgnored } from './utils/storage'
 
-console.log('Content script loaded')
-
-// Your content script logic will go here
-// For example, you might want to scan the page for words in the target language
-
-function replaceTextInElement(
-  element: HTMLElement,
-  searchText: string,
-  _replacementHTML: string,
-) {
-  const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null)
-  const nodesToReplace = []
-  let node
-
-  // Find all text nodes containing the search text
-  while ((node = walker.nextNode())) {
-    if (node.nodeValue && node.nodeValue.includes(searchText)) {
-      nodesToReplace.push(node)
-    }
-  }
-
-  // Replace the text in each found node
-  nodesToReplace.forEach((textNode) => {
-    const parent = textNode.parentNode
-    const parts = textNode.nodeValue!.split(searchText)
-    const fragment = document.createDocumentFragment()
-
-    parts.forEach((part, index) => {
-      fragment.appendChild(document.createTextNode(part))
-      if (index < parts.length - 1) {
-        const span = document.createElement('span')
-        span.className = 'lexa-root-node'
-        fragment.appendChild(span)
-        mountLexaRoot(span, _replacementHTML)
-        // span.className = 'lexa-root-node'
-      }
-    })
-
-    parent?.replaceChild(fragment, textNode)
-  })
+declare global {
+  var __DEBUG__: boolean
 }
+globalThis.__DEBUG__ = import.meta.env.VITE_LEXA_DEBUG === 'true'
+
+console.log('Content script loaded')
 
 async function initializeLexaExtension() {
   const isIgnored = await isCurrentSiteIgnored()
 
   if (isIgnored) {
-    console.log('Lexa is disabled for this site')
+    if (__DEBUG__) {
+      console.log('Lexa is disabled for this site')
+    }
     return
   } else {
-    console.log('Lexa is active on this site')
+    // For now, we only want to translate crxjs.dev
+    if (!location.href.includes('crxjs.dev')) {
+      return
+    }
+
+    if (__DEBUG__) {
+      console.log('Lexa is active on this site')
+    }
   }
 
-  // Initialize Lexa functionality
-  // For now, just working on the crxjs.dev site for testing the extension
-  if (window.location.href.includes('https://crxjs.dev/')) {
-    const markdown = htmlToMarkdown(document.body)
-    console.log('Markdown:', markdown)
+  // Define user preferences (these could be dynamic in a real application)
+  const userPreferences: GeneratePageTranslationsSettings = {
+    targetLanguage: 'Spanish',
+    learningGoals: 'Learn Spanish',
+    proficiencyLevel: 'Intermediate',
+    preferredPhraseLength: 'Short',
+    translationDensityPercent: 10,
+  }
 
-    const result = generatePageTranslations(markdown, {
-      targetLanguage: 'Spanish',
-      learningGoals: 'Learn Spanish',
-      proficiencyLevel: 'Intermediate',
-      preferredPhraseLength: 'Short',
-      translationDensityPercent: 10,
-    })
-    console.log('Result:', result)
+  const markdown = htmlToMarkdown(document.body)
+  console.log('Markdown:', { markdown })
 
-    // replaceTextInElement(element as HTMLElement, 'script', 'guion')
+  if (true) {
+    const result = await generatePageTranslations(markdown, userPreferences)
+
+    for await (const translation of result.elementStream) {
+      // Replace the text segments in the DOM
+      replaceTextSegments(document.body, [translation])
+    }
+  } else {
+    // replaceTextSegments(document.body, [
+    //   {
+    //     original: 'host page',
+    //     translation: 'página anfitriona',
+    //     context: 'The page where the script runs is called the **host page**.',
+    //   },
+    // ])
+    replaceTextSegments(document.body, [
+      {
+        original: 'create our root element',
+        translation: 'crear nuestro elemento raíz',
+        context:
+          "Content scripts don't use an HTML file, so we need to create our root element and append it to the DOM.",
+      },
+    ])
   }
 }
 

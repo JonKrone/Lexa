@@ -5,11 +5,16 @@ import { ShadowDOM } from './ShadowDOM'
 const HOVER_DELAY = 350
 
 interface HoverCardProps {
+  onHover: () => void
   content: ReactElement
   children: React.ReactNode
 }
 
-export const HoverCard: React.FC<HoverCardProps> = ({ content, children }) => {
+export const HoverCard: React.FC<HoverCardProps> = ({
+  onHover,
+  content,
+  children,
+}) => {
   const [isOpen, setIsOpen] = useState(false)
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -17,6 +22,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({ content, children }) => {
   const handleMouseEnter = () => {
     hoverTimerRef.current = setTimeout(() => {
       setIsOpen(true)
+      onHover()
     }, HOVER_DELAY)
   }
 
