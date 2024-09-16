@@ -21,11 +21,12 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   generateTranslationDetails,
   ITranslationDetails,
 } from '../../ai/generateTranslationDetails'
+import { supabase } from '../../db/supabase'
 import { getPageLanguage, getPageTitle } from '../../utils/documentUtils'
 
 type TabValue = 'details' | 'notes' | 'quiz'
@@ -63,6 +64,20 @@ export function LexaCardContent({
   const [notes, setNotes] = useState('')
   const [thumbsUp, setThumbsUp] = useState(false)
   const [thumbsDown, setThumbsDown] = useState(false)
+
+  useEffect(() => {
+    console.log('supabase', supabase)
+
+    const addData = async () => {
+      const result = await supabase.from('test_table').insert({
+        key: Date.now().toString().substring(8),
+      })
+      console.log('result', result)
+
+      return result
+    }
+    addData()
+  }, [])
 
   const {
     data: translationDetails = {} as GenerateObjectResult<ITranslationDetails>,
