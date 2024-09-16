@@ -1,6 +1,5 @@
-import { streamObject } from 'ai'
+import { generateObject } from 'ai'
 import { z } from 'zod'
-import { ITranslation } from './generatePageTranslations'
 import { Models } from './models'
 
 //   "word": {
@@ -76,17 +75,29 @@ const TranslationDetailsSchema = z.object({
       'Any regional differences in the usage or translation of the word or phrase.',
     ),
   otherWaysToSay: z
-    .string()
+    .array(
+      z.object({
+        translation: z
+          .string()
+          .describe(
+            'The translation of the word or phrase in the target language.',
+          ),
+        explanation: z
+          .string()
+          .describe(
+            'The explanation of the word or phrase in the source language.',
+          ),
+      }),
+    )
     .describe(
       'Alternative expressions or phrases that convey the same meaning. Include synonyms and other ways to say the same thing.',
     ),
-  synonyms: z
-    .string()
-    .describe(
-      'A list of synonyms for the word or phrase. Applicable if the word is a single word or if synonyms make sense in context.',
-    ),
   antonyms: z
-    .string()
+    .array(
+      z
+        .string()
+        .describe('An antonym for the word or phrase in the target language.'),
+    )
     .describe(
       'A list of antonyms for the word or phrase. Applicable if the word is a single word or if antonyms make sense in context.',
     ),
@@ -104,19 +115,23 @@ const TranslationDetailsSchema = z.object({
 
 export type ITranslationDetails = z.infer<typeof TranslationDetailsSchema>
 
-export async function generateTranslationDetails(translation: ITranslation) {
-  const prompt = makeTranslationDetailsPrompt(translation)
+export async function generateTranslationDetails(
+  inputs: TranslationDetailsInputs,
+) {
+  const prompt = makeTranslationDetailsPrompt(inputs)
 
-  const result = await streamObject({
-    model: Models.openai.gpt4oMini,
+  const result = await generateObject({
+    model: Models.openai.gpt4o,
     prompt,
     schema: TranslationDetailsSchema,
   })
 
+  console.log('result', result)
+
   return result
 }
 
-type TranslationDetailsInputs = {
+interface TranslationDetailsInputs {
   word: string
   translation: string
   pageTitle: string
@@ -132,15 +147,16 @@ export function makeTranslationDetailsPrompt(
   inputs: TranslationDetailsInputs,
 ): string {
   return `
-You are an AI language model that provides detailed linguistic and cultural information about words or phrases.
+You are an AI language model that provides concise, engaging linguistic and cultural information to help users learn a new language.
 
 **Instructions:**
 
-- Use the provided information to generate a JSON object that adheres strictly to the schema below.
-- Do not include any text outside of the JSON object.
-- Ensure all fields are correctly filled according to their descriptions.
-- If a field is not applicable or relevant, set it to an empty string ("") for strings or an empty array ([]) for arrays.
-- Use the context and webpage information to disambiguate the meaning if necessary.
+- Use the provided information to generate content for each field in the JSON schema below.
+- Provide synonyms, antonyms, and alternative expressions in the **target language** ("${inputs.targetLanguage || 'target language'}") to enhance learning.
+- Keep cultural insights and regional variations brief and relevant.
+- Tailor your language to be engaging and suitable for someone learning "${inputs.targetLanguage || 'the target language'}".
+- Use context and webpage information to clarify meanings if necessary.
+- Exclude any explanations or additional text outside of the JSON output.
 
 **Input Information:**
 
@@ -153,6 +169,5 @@ ${inputs.sourceLanguage ? `- **Source Language**: "${inputs.sourceLanguage}"` : 
 ${inputs.targetLanguage ? `- **Target Language**: "${inputs.targetLanguage}"` : ''}
 ${inputs.partOfSpeech ? `- **Part of Speech**: "${inputs.partOfSpeech}"` : ''}
 ${inputs.dialectOrRegion ? `- **Dialect or Region**: "${inputs.dialectOrRegion}"` : ''}
-
 `
 }

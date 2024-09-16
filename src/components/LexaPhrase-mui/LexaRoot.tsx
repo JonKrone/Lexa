@@ -1,7 +1,7 @@
 import { Box, useTheme } from '@mui/material'
 import React from 'react'
-import { ComplexHoverCardContent } from './ComplexHoverCardContent'
-import { HoverCard } from './HoverCard'
+import { HoverCard } from '../HoverCard'
+import { LexaCardContent } from './LexaCardContent'
 
 export interface LexaRootProps {
   translation: string
@@ -21,9 +21,7 @@ export const LexaRoot: React.FC<LexaRootProps> = ({
         console.log('hover')
         // TODO: prefetch translation details
       }}
-      content={
-        <ComplexHoverCardContent {...{ translation, original, context }} />
-      }
+      content={<LexaCardContent {...{ translation, original, context }} />}
     >
       <Box
         component="span"

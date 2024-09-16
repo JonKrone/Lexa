@@ -1,7 +1,8 @@
-import { Theme, ThemeProps } from '@radix-ui/themes'
+import { ThemeProvider } from '@mui/material'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { FC } from 'react'
 import { Router } from 'wouter'
+import { theme } from '../config/theme'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,16 +12,12 @@ const queryClient = new QueryClient({
   },
 })
 
-const theme = {
-  accentColor: 'teal',
-} satisfies ThemeProps
-
 export const Providers: FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <Theme {...theme}>
+      <ThemeProvider theme={theme}>
         <Router>{children}</Router>
-      </Theme>
+      </ThemeProvider>
     </QueryClientProvider>
   )
 }

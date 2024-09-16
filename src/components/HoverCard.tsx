@@ -1,6 +1,7 @@
 import { Box, ClickAwayListener, Popper } from '@mui/material'
 import React, { ReactElement, useEffect, useRef, useState } from 'react'
-import { ShadowDOM } from './ShadowDOM'
+import { ShadowDOM } from './LexaPhrase-mui/ShadowDOM'
+import { Providers } from './Providers'
 
 const HOVER_DELAY = 350
 
@@ -87,7 +88,9 @@ export const HoverCard: React.FC<HoverCardProps> = ({
             },
           ]}
         >
-          <ShadowDOM>{content}</ShadowDOM>
+          <ShadowDOM>
+            <Providers>{content}</Providers>
+          </ShadowDOM>
         </Popper>
       </div>
     </ClickAwayListener>

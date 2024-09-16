@@ -5,7 +5,6 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  Grid2,
   IconButton,
   styled,
   Tab,
@@ -14,6 +13,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
+import { GenerateObjectResult } from 'ai'
 import {
   MessageSquareQuote,
   Settings,
@@ -22,9 +22,23 @@ import {
   ThumbsUp,
 } from 'lucide-react'
 import React, { useState } from 'react'
-import { generateTranslationDetails } from '../../ai/generateTranslationDetails'
+import {
+  generateTranslationDetails,
+  ITranslationDetails,
+} from '../../ai/generateTranslationDetails'
+import { getPageLanguage, getPageTitle } from '../../utils/documentUtils'
 
 type TabValue = 'details' | 'notes' | 'quiz'
+
+interface LexaCardContentProps {
+  translation: string
+  original: string
+  context: string
+  // wordGender: string
+  // masteryLevel: string
+  // isFavorited: boolean
+  // onFavoriteToggle: () => void
+}
 
 /**
  * TODO: Allow users to add their own notes to the translation
@@ -36,36 +50,44 @@ type TabValue = 'details' | 'notes' | 'quiz'
  * TODO: Report issues: incorrect translation, suggest improvements, etc
  * TODO: Settings shortcut (new ideas: reminders for daily/weekly quizzes)
  */
-export function ComplexHoverCardContent({
+export function LexaCardContent({
   translation,
   original,
-  wordGender,
-  masteryLevel,
-  isFavorited,
-  onFavoriteToggle,
-}: {
-  translation: string
-  original: string
-  wordGender: string
-  masteryLevel: string
-  isFavorited: boolean
-  onFavoriteToggle: () => void
-}) {
+  context,
+  // wordGender,
+  // masteryLevel,
+  // isFavorited,
+  // onFavoriteToggle,
+}: LexaCardContentProps) {
   const [tabValue, setTabValue] = useState<TabValue>('details')
   const [notes, setNotes] = useState('')
   const [thumbsUp, setThumbsUp] = useState(false)
   const [thumbsDown, setThumbsDown] = useState(false)
 
-  const { data: translationDetails } = useQuery({
-    queryKey: ['translationDetails', translation],
-    queryFn: () => {
-      return generateTranslationDetails({
+  const {
+    data: translationDetails = {} as GenerateObjectResult<ITranslationDetails>,
+  } = useQuery({
+    queryKey: ['translationDetails', context],
+    queryFn: async () => {
+      const inputs = {
+        word: original,
         translation,
-        original,
-        context,
-      })
+        pageTitle: getPageTitle() ?? '',
+        surroundingContext: context,
+        url: window.location.href,
+        targetLanguage: 'English',
+        dialectOrRegion: getPageLanguage() ?? '',
+      }
+
+      return generateTranslationDetails(inputs)
     },
   })
+  console.log('translationDetails', translationDetails.object)
+
+  const masteryLevel = 'Learning'
+  const isFavorited = false
+  const onFavoriteToggle = () => {}
+  const details = translationDetails.object
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: TabValue) => {
     setTabValue(newValue)
@@ -92,45 +114,59 @@ export function ComplexHoverCardContent({
     >
       <CardHeader
         title={
-          <Grid2 container alignItems="center" spacing={1}>
-            <Grid2>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: '1fr auto',
+              alignItems: 'flex-start',
+              gap: 2,
+            }}
+          >
+            <Box>
               <Typography variant="h6">{translation}</Typography>
               <Typography variant="subtitle1" color="textSecondary">
-                {original} {wordGender && `(${wordGender})`}
+                {original} {details?.wordGender && `(${details?.wordGender})`}
               </Typography>
-            </Grid2>
-            <Grid2>
-              <Grid2 container spacing={0.5}>
-                <Grid2>
-                  <IconButton onClick={onFavoriteToggle} aria-label="favorite">
-                    <Star fill={isFavorited ? 'gold' : 'gray'} />
-                  </IconButton>
-                </Grid2>
-                <Grid2>
-                  <IconButton
-                    onClick={handleThumbsUp}
-                    color={thumbsUp ? 'primary' : 'default'}
-                    aria-label="thumbs up"
-                  >
-                    <ThumbsUp />
-                  </IconButton>
-                </Grid2>
-                <Grid2>
-                  <IconButton
-                    onClick={handleThumbsDown}
-                    color={thumbsDown ? 'primary' : 'default'}
-                    aria-label="thumbs down"
-                  >
-                    <ThumbsDown />
-                  </IconButton>
-                </Grid2>
-              </Grid2>
-            </Grid2>
-          </Grid2>
+            </Box>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, auto)',
+                gap: 0.5,
+              }}
+            >
+              <StyledIconButton
+                onClick={onFavoriteToggle}
+                aria-label="favorite"
+              >
+                <Star fill={isFavorited ? 'gold' : 'gray'} />
+              </StyledIconButton>
+              <StyledIconButton
+                onClick={handleThumbsUp}
+                color={thumbsUp ? 'primary' : 'default'}
+                aria-label="thumbs up"
+                sx={{
+                  padding: 1,
+                  '& > svg': {
+                    height: 20,
+                    width: 20,
+                  },
+                }}
+              >
+                <ThumbsUp />
+              </StyledIconButton>
+              <StyledIconButton
+                onClick={handleThumbsDown}
+                color={thumbsDown ? 'primary' : 'default'}
+                aria-label="thumbs down"
+              >
+                <ThumbsDown />
+              </StyledIconButton>
+            </Box>
+          </Box>
         }
-        // Removed the 'action' prop since buttons are moved to the footer
       />
-      <CardContent sx={{ paddingTop: 0, flexGrow: 1 }}>
+      <CardContent sx={{ pt: 0, pb: 0, flexGrow: 1 }}>
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -145,42 +181,40 @@ export function ComplexHoverCardContent({
         <Box sx={{ marginTop: 2, overflowY: 'auto', height: 250 }}>
           {tabValue === 'details' && (
             <Box>
-              {/* Mastery Level Indicator */}
               <Typography variant="body2">
                 Mastery Level: {masteryLevel}
               </Typography>
-              {/* Contextual Examples */}
               <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
                 Contextual Examples
               </Typography>
               <Typography variant="body2">
-                {/* Placeholder for examples */}
-                - Formal usage example.
-                <br />- Informal usage example.
+                {details?.formalUsage}
+                <br />
+                {details?.informalUsage}
               </Typography>
-              {/* Synonyms and Antonyms */}
               <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                Synonyms & Antonyms
+                Other Ways to Say
               </Typography>
               <Typography variant="body2">
-                {/* Placeholder for synonyms/antonyms */}
-                Synonyms: example1, example2
+                {details?.otherWaysToSay.map(({ translation, explanation }) => (
+                  <React.Fragment key={translation}>
+                    {translation} - {explanation}
+                    <br />
+                  </React.Fragment>
+                ))}
                 <br />
-                Antonyms: example3, example4
+                Antonyms: {details?.antonyms.join(', ')}
               </Typography>
-              {/* Cultural Insights */}
               <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
                 Cultural Insights
               </Typography>
               <Typography variant="body2">
-                {/* Placeholder for cultural insights */}
-                This word is often used in idiomatic expressions like...
+                {details?.culturalInsights}
               </Typography>
             </Box>
           )}
           {tabValue === 'notes' && (
             <Box>
-              {/* Personal Notes */}
               <Typography variant="subtitle1">Your Notes</Typography>
               <TextField
                 variant="outlined"
@@ -195,7 +229,6 @@ export function ComplexHoverCardContent({
           )}
           {tabValue === 'quiz' && (
             <Box>
-              {/* Quick Quiz Placeholder */}
               <Typography variant="subtitle1">Quick Quiz</Typography>
               <Typography variant="body2">Quizzes are coming soon!</Typography>
               <Button variant="contained" sx={{ marginTop: 2 }}>
@@ -216,6 +249,14 @@ export function ComplexHoverCardContent({
     </Card>
   )
 }
+
+const StyledIconButton = styled(IconButton)({
+  padding: 1,
+  '& > svg': {
+    height: 20,
+    width: 20,
+  },
+})
 
 interface StyledTabsProps {
   children?: React.ReactNode

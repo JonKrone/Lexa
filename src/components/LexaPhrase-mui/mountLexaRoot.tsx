@@ -1,4 +1,5 @@
 import ReactDOM from 'react-dom/client'
+import { Providers } from '../Providers'
 import { LexaRoot, LexaRootProps } from './LexaRoot'
 import { ShadowDOM } from './ShadowDOM'
 
@@ -21,7 +22,9 @@ export function mountLexaRoot(range: Range, translation: LexaRootProps): void {
   // Render the LexaRoot
   ReactDOM.createRoot(customElement).render(
     <ShadowDOM as="span">
-      <LexaRoot {...translation} />
+      <Providers>
+        <LexaRoot {...translation} />
+      </Providers>
     </ShadowDOM>,
   )
 
