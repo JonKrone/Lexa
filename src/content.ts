@@ -44,7 +44,7 @@ async function initializeLexaExtension() {
   const markdown = htmlToMarkdown(document.body)
   console.log('Markdown:', { markdown })
 
-  if (true) {
+  if (false) {
     const result = await generatePageTranslations(markdown, userPreferences)
 
     for await (const translation of result.elementStream) {
@@ -59,14 +59,14 @@ async function initializeLexaExtension() {
     //     context: 'The page where the script runs is called the **host page**.',
     //   },
     // ])
-    replaceTextSegments(document.body, [
-      {
-        original: 'create our root element',
-        translation: 'crear nuestro elemento raíz',
-        context:
-          "Content scripts don't use an HTML file, so we need to create our root element and append it to the DOM.",
-      },
-    ])
+    // replaceTextSegments(document.body, [
+    //   {
+    //     original: 'create our root element',
+    //     translation: 'crear nuestro elemento raíz',
+    //     context:
+    //       "Content scripts don't use an HTML file, so we need to create our root element and append it to the DOM.",
+    //   },
+    // ])
   }
 }
 

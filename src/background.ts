@@ -1,29 +1,38 @@
 console.log('Background script loaded')
 
-// TODO: Move types to a dedicated file
-export type SelectedTextMessage = {
-  type: 'SELECTED_TEXT'
-  text: string
+import { __unstable__createClerkClient } from '@clerk/chrome-extension/background'
+
+const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+
+async function getToken() {
+  const clerk = await __unstable__createClerkClient({
+    publishableKey,
+    syncSessionWithTab: true,
+  })
+  return clerk.session?.getToken()
 }
 
-export type IgnoredSitesChangedMessage = {
-  type: 'IGNORED_SITES_CHANGED'
-  // ignoredSites: IgnoredSite[]
-}
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log(
+    sender.tab
+      ? `from a content script: ${sender.tab.url}`
+      : 'from the extension',
+  )
 
-export type LexaCrossBoundaryEvents =
-  | SelectedTextMessage
-  | IgnoredSitesChangedMessage
-
-// Listen for messages from the content script
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.type === 'SELECTED_TEXT') {
-    // console.log('Selected text:', message.text)
-    // Here you could process the selected text, e.g., translate it or add it to the user's vocab list
-    // You might want to use chrome.storage to persist data
-    // chrome.storage.local.set({ lastSelectedText: message.text })
+  if (message.greeting === 'hello') {
+    getToken().then((token) => {
+      console.log('Background Token:', token)
+      sendResponse({ token })
+    })
   }
 })
+
+// TODO: Move types to a dedicated file
+export type IgnoredSitesChangedMessage = {
+  type: 'IGNORED_SITES_CHANGED'
+}
+
+export type LexaCrossBoundaryEvents = IgnoredSitesChangedMessage
 
 // You could also set up periodic tasks here, e.g., to refresh the user's word list
 // chrome.alarms.create('refreshWordList', { periodInMinutes: 60 })

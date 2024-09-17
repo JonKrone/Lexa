@@ -90,6 +90,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({
         >
           <ShadowDOM>
             <Providers>{content}</Providers>
+            {/* {content} */}
           </ShadowDOM>
         </Popper>
       </div>
