@@ -1,12 +1,13 @@
 {
   "$schema": "https://json.schemastore.org/chrome-manifest",
-  "manifest_version": 3,
   "name": "Lexa",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAphVbBnGtHrT4omUQ+potjkEsyWcTLJQDXZEYvyuINV2nzy3kfz62+m/S7oilau/XiBIDGe5QQmIIP6RABubYPH/SVgIRJ+NNGFRJhyvMAW9PuVaF635k4ekZWwfcwPa0gilONkahX5UqztJ/rX1AMmn9R49uy//D4FBYc+rehG9zXBp4msPzlr4RZsbrLNzr5Hji8YY84r8bafM4orsF2jPMiCAVC82YNnBVXF/WhmYkEfA/HBMUdAhU1PqlOfKZa9VIYqzI4RwylscO2L3zI6rj+Zb2G9PybpUmSUk9feQeXUzTkzzde1jJZR7onBVI5E9VkLLikJ2uzl4ArYhNXwIDAQAB",
   "version": "1.0.0",
+  "manifest_version": 3,
   "description": "Learn a new language while browsing the web",
   "action": { "default_popup": "index.html" },
   "permissions": ["activeTab", "storage", "cookies"],
-  "host_permissions": ["http://localhost", "<all_urls>"],
+  "host_permissions": ["<all_urls>"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
