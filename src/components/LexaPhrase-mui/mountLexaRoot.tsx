@@ -23,12 +23,6 @@ export function mountLexaRoot(range: Range, translation: LexaRootProps): void {
   ReactDOM.createRoot(customElement).render(
     <ShadowDOM as="span">
       <Providers>
-        {/* <ClerkProvider
-          publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
-          syncSessionWithTab
-        >
-          <LexaRoot {...translation} />
-        </ClerkProvider> */}
         <LexaRoot {...translation} />
       </Providers>
     </ShadowDOM>,

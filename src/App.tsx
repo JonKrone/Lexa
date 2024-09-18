@@ -23,13 +23,6 @@ export const App: React.FC = () => {
       <header className="bg-blue-600 text-white p-4">
         <h1 className="text-2xl font-bold">Lexa</h1>
         <p className="text-sm">Your personal language learning assistant</p>
-        {/* <SignedOut>
-          <SignUp />
-          <SignIn />
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn> */}
         <SupabaseAuth />
       </header>
 
@@ -80,10 +73,8 @@ const SupabaseAuth: React.FC = () => {
     event.preventDefault()
     const formData = new FormData(event.target as HTMLFormElement)
     const email = formData.get('email') as string
-    console.log('email', email)
 
     const extensionUrl = chrome.runtime.getURL('')
-    console.log('extensionUrl', extensionUrl)
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {

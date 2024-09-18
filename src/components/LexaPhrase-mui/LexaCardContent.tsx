@@ -35,10 +35,6 @@ interface LexaCardContentProps {
   translation: string
   original: string
   context: string
-  // wordGender: string
-  // masteryLevel: string
-  // isFavorited: boolean
-  // onFavoriteToggle: () => void
 }
 
 /**

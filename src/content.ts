@@ -1,3 +1,5 @@
+import './env'
+
 import {
   generatePageTranslations,
   GeneratePageTranslationsSettings,
@@ -5,11 +7,6 @@ import {
 import { htmlToMarkdown } from './utils/htmlToMarkdown'
 import { replaceTextSegments } from './utils/replaceTextSegments'
 import { isCurrentSiteIgnored } from './utils/storage'
-
-declare global {
-  var __DEBUG__: boolean
-}
-globalThis.__DEBUG__ = import.meta.env.VITE_LEXA_DEBUG === 'true'
 
 console.log('Content script loaded')
 
@@ -32,7 +29,7 @@ async function initializeLexaExtension() {
     }
   }
 
-  // Define user preferences (these could be dynamic in a real application)
+  // Define user preferences (these will later be dynamic)
   const userPreferences: GeneratePageTranslationsSettings = {
     targetLanguage: 'Spanish',
     learningGoals: 'Learn Spanish',

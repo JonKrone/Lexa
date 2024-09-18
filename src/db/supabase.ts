@@ -22,3 +22,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
     storage: storageAdapter,
   },
 })
+
+if (__DEBUG__) {
+  ;(window as any).supabase = supabase
+}
