@@ -18,6 +18,7 @@ const storageAdapter = {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
+    // TODO: Change to 'lexa-auth' when we log in again. We're currently rate-limited.
     storageKey: 'lexa-auth-token',
     storage: storageAdapter,
   },

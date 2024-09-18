@@ -1,7 +1,7 @@
 import { Button, TextField } from '@mui/material'
 import React from 'react'
 import { Link, Route, Switch, useLocation } from 'wouter'
-import { supabase } from './db/supabase'
+import { supabase } from './config/supabase'
 import Home from './pages/Home'
 import Learn from './pages/Learn'
 import Settings from './pages/Settings'

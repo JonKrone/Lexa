@@ -26,7 +26,7 @@ import {
   generateTranslationDetails,
   ITranslationDetails,
 } from '../../ai/generateTranslationDetails'
-import { supabase } from '../../db/supabase'
+import { supabase } from '../../config/supabase'
 import { getPageLanguage, getPageTitle } from '../../utils/documentUtils'
 
 type TabValue = 'details' | 'notes' | 'quiz'

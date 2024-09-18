@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../../db/supabase'
+import { supabase } from '../../config/supabase'
 
 export const Confirm = () => {
   const authParams = useAuthParams()
