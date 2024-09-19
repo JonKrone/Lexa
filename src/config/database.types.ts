@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      settings: {
+        Row: {
+          id: string
+          learning_goals: string | null
+          learning_level: string
+          target_language: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          learning_goals?: string | null
+          learning_level: string
+          target_language: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          learning_goals?: string | null
+          learning_level?: string
+          target_language?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "settings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_table: {
         Row: {
           created_at: string
@@ -32,7 +67,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      nanoid: {
+        Args: {
+          size?: number
+          alphabet?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

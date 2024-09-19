@@ -4,9 +4,9 @@ import {
   generatePageTranslations,
   GeneratePageTranslationsSettings,
 } from './ai/generatePageTranslations'
-import { htmlToMarkdown } from './utils/htmlToMarkdown'
-import { replaceTextSegments } from './utils/replaceTextSegments'
-import { isCurrentSiteIgnored } from './utils/storage'
+import { htmlToMarkdown } from './lib/htmlToMarkdown'
+import { replaceTextSegments } from './lib/replaceTextSegments'
+import { isCurrentSiteIgnored } from './lib/storage'
 
 console.log('Content script loaded')
 

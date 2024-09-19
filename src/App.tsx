@@ -29,24 +29,27 @@ export const App: React.FC = () => {
       <nav className="bg-white shadow-md">
         <ul className="flex justify-around p-2">
           <li>
-            <Link href="/home">
-              <a className="text-blue-600 hover:text-blue-800 font-medium">
-                Home
-              </a>
+            <Link
+              href="/home"
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Home
             </Link>
           </li>
           <li>
-            <Link href="/learn">
-              <a className="text-blue-600 hover:text-blue-800 font-medium">
-                Learn
-              </a>
+            <Link
+              href="/learn"
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Learn
             </Link>
           </li>
           <li>
-            <Link href="/settings">
-              <a className="text-blue-600 hover:text-blue-800 font-medium">
-                Settings
-              </a>
+            <Link
+              href="/settings"
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Settings
             </Link>
           </li>
         </ul>
