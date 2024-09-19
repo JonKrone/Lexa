@@ -1,96 +1,120 @@
-import { Button, TextField } from '@mui/material'
-import React from 'react'
+import {
+  Box,
+  Button,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  TextField,
+} from '@mui/material'
+import React, { FC, Suspense, useEffect } from 'react'
 import { Link, Route, Switch, useLocation } from 'wouter'
-import { supabase } from './config/supabase'
+import { Body2, H2 } from './components/Typography'
+import { isFullPageView } from './lib/utils'
 import Home from './pages/Home'
 import Learn from './pages/Learn'
 import Settings from './pages/Settings'
 import { Confirm } from './pages/auth/confirm'
+import { useSignInWithOtp } from './queries/auth'
 
-export const App: React.FC = () => {
+export const App: FC = () => {
+  const isFullTabView = isFullPageView()
   const [location, setLocation] = useLocation()
-  console.log('location', location)
 
   // Redirect to home if the current location is the root
-  React.useEffect(() => {
+  useEffect(() => {
     if (location === '/index.html') {
       setLocation('/home')
     }
   }, [location, setLocation])
 
   return (
-    <div className="w-[350px] h-[500px] flex flex-col bg-gray-50">
-      <header className="bg-blue-600 text-white p-4">
-        <h1 className="text-2xl font-bold">Lexa</h1>
-        <p className="text-sm">Your personal language learning assistant</p>
-        <SupabaseAuth />
-      </header>
+    <Box sx={{ display: 'flex', placeContent: 'center' }}>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Box sx={!isFullTabView ? { width: 350, height: 500 } : {}}>
+          <header>
+            <H2>Lexa</H2>
+            <Body2>Your personal language learning assistant</Body2>
+            <SupabaseAuth />
+          </header>
 
-      <nav className="bg-white shadow-md">
-        <ul className="flex justify-around p-2">
-          <li>
-            <Link
-              href="/home"
-              className="text-blue-600 hover:text-blue-800 font-medium"
+          <Box component="nav" sx={{ bgcolor: 'background.paper' }}>
+            <List
+              sx={{ display: 'flex', justifyContent: 'space-around', p: 2 }}
             >
-              Home
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/learn"
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Learn
-            </Link>
-          </li>
-          <li>
-            <Link
-              href="/settings"
-              className="text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Settings
-            </Link>
-          </li>
-        </ul>
-      </nav>
+              <ListItem disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href="/home"
+                  sx={{
+                    color: 'primary.main',
+                    '&:hover': { color: 'primary.dark' },
+                    fontWeight: 'medium',
+                  }}
+                >
+                  <ListItemText primary="Home" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href="/learn"
+                  sx={{
+                    color: 'primary.main',
+                    '&:hover': { color: 'primary.dark' },
+                    fontWeight: 'medium',
+                  }}
+                >
+                  <ListItemText primary="Learn" />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton
+                  component={Link}
+                  href="/settings"
+                  sx={{
+                    color: 'primary.main',
+                    '&:hover': { color: 'primary.dark' },
+                    fontWeight: 'medium',
+                  }}
+                >
+                  <ListItemText primary="Settings" />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </Box>
 
-      <main className="flex-grow overflow-y-auto p-4">
-        <Switch>
-          <Route path="/home" component={Home} />
-          <Route path="/learn" component={Learn} />
-          <Route path="/settings" component={Settings} />
-          <Route path="/auth/confirm" component={Confirm} />
-        </Switch>
-      </main>
+          <main className="flex-grow overflow-y-auto p-4">
+            <Switch>
+              <Route path="/home" component={Home} />
+              <Route path="/learn" component={Learn} />
+              <Route path="/settings" component={Settings} />
+              <Route path="/auth/confirm" component={Confirm} />
+            </Switch>
+          </main>
 
-      <footer className="bg-gray-100 p-2 text-center text-sm text-gray-600">
-        Lexa © 2024 - Expand your vocabulary while browsing
-      </footer>
-    </div>
+          <footer className="bg-gray-100 p-2 text-center text-sm text-gray-600">
+            Lexa © 2024 - Expand your vocabulary while browsing
+          </footer>
+        </Box>
+      </Suspense>
+    </Box>
   )
 }
 
 const SupabaseAuth: React.FC = () => {
-  const signInWithEmail = async (event: React.FormEvent<HTMLFormElement>) => {
+  const { mutate: signInWithOtp, isPending } = useSignInWithOtp()
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.target as HTMLFormElement)
     const email = formData.get('email') as string
 
-    const extensionUrl = chrome.runtime.getURL('')
-    const { data, error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${extensionUrl}auth/confirm`,
-      },
-    })
-
-    console.log('data', data)
-    console.log('error', error)
+    signInWithOtp(email)
   }
 
   return (
-    <form noValidate autoComplete="off" onSubmit={signInWithEmail}>
+    <form noValidate autoComplete="off" onSubmit={handleSubmit}>
       <TextField
         name="email"
         label="Email"
@@ -100,8 +124,14 @@ const SupabaseAuth: React.FC = () => {
         margin="normal"
         placeholder="Enter your email"
       />
-      <Button variant="contained" color="primary" fullWidth type="submit">
-        Sign In
+      <Button
+        type="submit"
+        variant="contained"
+        color="primary"
+        fullWidth
+        disabled={isPending}
+      >
+        {isPending ? 'Sending...' : 'Sign In'}
       </Button>
     </form>
   )

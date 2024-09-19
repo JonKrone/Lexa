@@ -1,5 +1,10 @@
 import { User } from '@supabase/supabase-js'
-import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { supabase } from '../config/supabase'
 
 const authQueries = {
@@ -31,4 +36,21 @@ export function useUser() {
 
 export function useSession() {
   return useQuery(authQueries.session())?.data?.data.session ?? undefined
+}
+
+export function useSignInWithOtp() {
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const extensionUrl = chrome.runtime.getURL('')
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${extensionUrl}auth/confirm`,
+        },
+      })
+
+      if (error) throw error
+      return data
+    },
+  })
 }

@@ -14,3 +14,7 @@ export function debounce<T extends (...args: any[]) => void>(
     }, delay)
   }
 }
+
+export function isFullPageView() {
+  return window.innerWidth > 768
+}
