@@ -11,6 +11,7 @@ export const settingsQueries = {
       queryKey: ['settings'],
       queryFn: async () => {
         if (!user) return null
+
         const { data, error } = await supabase
           .from('settings')
           .select()
@@ -34,21 +35,10 @@ export type UpdatableSettings = OneFieldUpdate<
 >
 
 export const useUpdateSetting = () => {
-  const user = useUser()
   const { data: settings } = useSettings()
 
   return useMutation({
-    // mutationFn: async (changes: UpdatableSettings) =>
-    //   (
-    //     await supabase
-    //       .from('settings')
-    //       .upsert({ ...settings, ...changes } as Tables<'settings'>)
-    //       .eq('user_id', user.id)
-    //       .select()
-    //   ).data,
     mutationFn: async (changes: UpdatableSettings) => {
-      console.log('updating settings: ', changes)
-
       const { data, error } = await supabase
         .from('settings')
         .upsert({ ...settings, ...changes } as Tables<'settings'>)

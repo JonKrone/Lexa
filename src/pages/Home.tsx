@@ -1,4 +1,5 @@
 import React from 'react'
+import { SubmitButton } from '../components/SubmitButton'
 
 const Home: React.FC = () => {
   return (
@@ -20,9 +21,7 @@ const Home: React.FC = () => {
           </li>
         </ul>
       </div>
-      <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-300">
-        Start Learning
-      </button>
+      <SubmitButton>Start Learning</SubmitButton>
     </div>
   )
 }

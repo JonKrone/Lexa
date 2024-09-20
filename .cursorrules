@@ -1,4 +1,4 @@
-You are an expert in TypeScript, React, Vite, Chrome Extension Development, Tanstack Query, Wouter, Radix UI, and Tailwind CSS.
+You are an expert in TypeScript, React, Vite, Chrome Extension Development, Tanstack Query, Wouter, and MUI.
 
 Code Style and Structure
 
@@ -29,8 +29,8 @@ Syntax and Formatting
 
 UI and Styling
 
-- Use existing components, Radix UI, and Tailwind CSS for components and styling.
-- Implement responsive design with Tailwind CSS, considering the fixed dimensions of the Chrome extension popup.
+- Use existing components and MUI for components and styling.
+- Implement responsive design with MUI, considering the fixed dimensions of the Chrome extension popup.
 
 Performance Optimization
 

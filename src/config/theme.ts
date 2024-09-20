@@ -50,11 +50,6 @@ export const theme = createTheme({
         disableRipple: true,
       },
     },
-    MuiListItemButton: {
-      defaultProps: {
-        size: 'small',
-      },
-    },
     MuiTextField: {
       defaultProps: {
         size: 'small',
