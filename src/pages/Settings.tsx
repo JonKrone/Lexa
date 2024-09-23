@@ -11,25 +11,21 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Slider,
   TextField,
   Typography,
 } from '@mui/material'
 import React from 'react'
 import { IgnoredSitesManager } from '../components/IgnoredSitesManager'
+import { Caption } from '../components/Typography'
+import { Database } from '../config/database.types'
 import { debounce } from '../lib/utils'
 import { useSettings, useUpdateSetting } from '../queries/settings'
 
+type LearningLevel = Database['public']['Enums']['learning_levels']
+
 const Settings: React.FC = () => {
   const [open, setOpen] = React.useState(false)
-  const { data: settings } = useSettings()
-  const { mutate: updateSetting } = useUpdateSetting()
-  const debouncedUpdateSetting = debounce(updateSetting, 350)
-
-  if (!settings) return null
-
-  const handleClickOpen = () => {
-    setOpen(true)
-  }
 
   const handleClose = () => {
     setOpen(false)
@@ -40,43 +36,13 @@ const Settings: React.FC = () => {
       <Typography variant="h5" gutterBottom>
         Settings
       </Typography>
-      <FormControl fullWidth>
-        <InputLabel id="target-language-label">Target Language</InputLabel>
-        <Select
-          labelId="target-language-label"
-          id="target-language"
-          label="Target Language"
-          defaultValue={settings.target_language ?? ''}
-          onChange={(e) => {
-            updateSetting({ target_language: e.target.value })
-          }}
-        >
-          <MenuItem value="fr">French</MenuItem>
-          <MenuItem value="es">Spanish</MenuItem>
-          <MenuItem value="de">German</MenuItem>
-        </Select>
-      </FormControl>
 
-      <FormControl fullWidth sx={{ mt: 2, mb: 2 }}>
-        <InputLabel htmlFor="learning-goals" shrink>
-          Learning Goals
-        </InputLabel>
-        <TextField
-          id="learning-goals"
-          multiline
-          rows={3}
-          draggable
-          placeholder="Describe your language learning goals here..."
-          defaultValue={settings.learning_goals ?? ''}
-          onChange={(e) => {
-            debouncedUpdateSetting({ learning_goals: e.target.value })
-          }}
-        />
-      </FormControl>
+      <TargetLanguageField />
+      <LearningLevelField />
+      <LearningGoalsField />
 
       <IgnoredSitesManager />
-
-      <Button variant="contained" fullWidth onClick={handleClickOpen}>
+      <Button variant="contained" fullWidth onClick={() => setOpen(true)}>
         Advanced Settings
       </Button>
       <Dialog open={open} onClose={handleClose}>
@@ -93,6 +59,106 @@ const Settings: React.FC = () => {
       </Dialog>
     </Box>
   )
+}
+
+const TargetLanguageField = () => {
+  const { data: settings } = useSettings()
+  const { mutate: updateSetting } = useUpdateSetting()
+
+  return (
+    <FormControl fullWidth>
+      <InputLabel id="target-language-label">Target Language</InputLabel>
+      <Select
+        labelId="target-language-label"
+        id="target-language"
+        label="Target Language"
+        value={settings?.target_language}
+        onChange={(e) => {
+          updateSetting({ target_language: e.target.value })
+        }}
+      >
+        <MenuItem value="fr">French</MenuItem>
+        <MenuItem value="es">Spanish</MenuItem>
+        <MenuItem value="de">German</MenuItem>
+      </Select>
+    </FormControl>
+  )
+}
+
+const LearningLevelField = () => {
+  const { data: settings } = useSettings()
+  const { mutate: updateSetting } = useUpdateSetting({ debounce: 350 })
+  const debouncedUpdateSetting = debounce(updateSetting, 350)
+  const [currentLevel, setCurrentLevel] = React.useState<LearningLevel>(
+    (settings?.learning_level as LearningLevel) ?? 'beginner',
+  )
+
+  const getLevelCaption = (level: LearningLevel) =>
+    ({
+      beginner: 'Just starting out.',
+      intermediate: 'Some experience.',
+      advanced: 'Fluent and beyond.',
+    })[level]
+
+  return (
+    <FormControl fullWidth sx={{ mt: 2, mb: 2 }}>
+      <Typography id="learning-level-slider" gutterBottom>
+        Learning Level
+      </Typography>
+      <Slider
+        aria-labelledby="learning-level-slider"
+        value={LevelValueMap[currentLevel as LearningLevel]}
+        onChange={(_, value) => {
+          const level = LevelValueMap[value as 0 | 1 | 2] as LearningLevel
+          setCurrentLevel(level)
+          debouncedUpdateSetting({ learning_level: level })
+        }}
+        step={null}
+        marks={[
+          { value: 0, label: 'Beginner' },
+          { value: 1, label: 'Intermediate' },
+          { value: 2, label: 'Advanced' },
+        ]}
+        min={0}
+        max={2}
+      />
+      <Caption color="text.secondary">{getLevelCaption(currentLevel)}</Caption>
+    </FormControl>
+  )
+}
+
+const LearningGoalsField = () => {
+  const { data: settings } = useSettings()
+  const { mutate: updateSetting } = useUpdateSetting()
+  const debouncedUpdateSetting = debounce(updateSetting, 350)
+
+  return (
+    <FormControl fullWidth sx={{ mt: 2, mb: 2 }}>
+      <InputLabel htmlFor="learning-goals" shrink>
+        Learning Goals
+      </InputLabel>
+      <TextField
+        id="learning-goals"
+        multiline
+        rows={3}
+        draggable
+        placeholder="Describe your language learning goals here..."
+        defaultValue={settings?.learning_goals ?? ''}
+        onChange={(e) => {
+          debouncedUpdateSetting({ learning_goals: e.target.value })
+        }}
+      />
+    </FormControl>
+  )
+}
+
+const LevelValueMap = {
+  beginner: 0,
+  intermediate: 1,
+  advanced: 2,
+  0: 'beginner',
+  1: 'intermediate',
+  2: 'advanced',
 }
 
 export default Settings

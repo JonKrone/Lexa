@@ -1,5 +1,5 @@
 export interface IgnoredSite {
-  domain: string
+  url: string
   addedAt: number
 }
 
@@ -8,26 +8,34 @@ export async function getIgnoredSites(): Promise<IgnoredSite[]> {
   return ignoredSites.ignoredSites || []
 }
 
-export async function addIgnoredSite(domain: string): Promise<void> {
-  if (!isValidDomain(domain)) {
+export async function addIgnoredSite(url: string): Promise<void> {
+  if (!urlIsValid(url)) {
     throw new Error('Invalid domain')
   }
   const ignoredSites = await getIgnoredSites()
-  if (isSiteIgnored(ignoredSites, domain)) return Promise.resolve()
+  if (isSiteIgnored(ignoredSites, url)) return
 
-  const newIgnoredSites = [...ignoredSites, { domain, addedAt: Date.now() }]
+  const normalizedUrl = normalizeUrl(url)
+  console.log('normalizedUrl', normalizedUrl)
+  const newIgnoredSites = [
+    ...ignoredSites,
+    { url: normalizedUrl, addedAt: Date.now() },
+  ]
   return chrome.storage.sync.set({ ignoredSites: newIgnoredSites })
 }
 
-export async function removeIgnoredSite(domain: string): Promise<void> {
-  if (!isValidDomain(domain)) {
+export async function removeIgnoredSite(url: string): Promise<void> {
+  if (!urlIsValid(url)) {
     throw new Error('Invalid domain')
   }
   const ignoredSites = await getIgnoredSites()
-  const newIgnoredSites = ignoredSites.filter((site) => site.domain !== domain)
+  const normalizedUrl = normalizeUrl(url)
+  const newIgnoredSites = ignoredSites.filter(
+    (site) => normalizeUrl(site.url) !== normalizedUrl,
+  )
 
-  if (newIgnoredSites.length === ignoredSites.length) return Promise.resolve()
-  return chrome.storage.sync.set({ ignoredSites: newIgnoredSites })
+  if (newIgnoredSites.length === ignoredSites.length) return
+  await chrome.storage.sync.set({ ignoredSites: newIgnoredSites })
 }
 
 export async function isCurrentSiteIgnored(): Promise<boolean> {
@@ -36,18 +44,31 @@ export async function isCurrentSiteIgnored(): Promise<boolean> {
   return isSiteIgnored(ignoredSites, currentDomain)
 }
 
-function isSiteIgnored(sites: IgnoredSite[], domain: string): boolean {
-  return sites.some((site) => site.domain === domain)
+function isSiteIgnored(sites: IgnoredSite[], url: string): boolean {
+  const normalizedUrl = normalizeUrl(url)
+  return sites.some((site) => normalizeUrl(site.url) === normalizedUrl)
 }
 
 /**
- * Supports domains with and without the www or http/https prefix.
+ * Supports domains with and without the www and any protocol (e.g., capacitor://, http://).
  */
-function isValidDomain(domain: string): boolean {
+export function urlIsValid(url: string): boolean {
   try {
-    new URL(`http://${domain}`)
+    const processedUrl = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(url)
+      ? url
+      : `http://${url}`
+    new URL(processedUrl)
     return true
-  } catch (error) {
+  } catch {
     return false
   }
+}
+
+function normalizeUrl(url: string): string {
+  const processedUrl = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(url)
+    ? url
+    : `http://${url}`
+  const parsedUrl = new URL(processedUrl)
+
+  return parsedUrl.hostname.toLowerCase()
 }

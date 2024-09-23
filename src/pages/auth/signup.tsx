@@ -5,7 +5,7 @@ import { SubmitButton } from '../../components/SubmitButton'
 import { Body2 } from '../../components/Typography'
 import { useIsAuthenticated, useSignInWithOtp } from '../../queries/auth'
 
-export const Login: FC = () => {
+export const Signup: FC = () => {
   const [, setLocation] = useLocation()
   const { mutateAsync: signInWithOtp, isPending } = useSignInWithOtp()
 
@@ -33,10 +33,10 @@ export const Login: FC = () => {
         placeholder="Enter your email"
       />
       <SubmitButton variant="contained" color="primary" fullWidth>
-        {isPending ? 'Sending...' : 'Sign In'}
+        {isPending ? 'Sending...' : 'Sign Up'}
       </SubmitButton>
       <Body2 mt={2}>
-        Don't have an account? <Link href="/auth/signup">Sign Up</Link>
+        Already have an account? <Link href="/auth/login">Sign In</Link>
       </Body2>
     </form>
   )

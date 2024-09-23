@@ -1,4 +1,4 @@
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: any[]) => void | Promise<any>>(
   callback: T,
   delay: number,
 ) {

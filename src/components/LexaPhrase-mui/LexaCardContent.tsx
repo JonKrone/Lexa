@@ -46,6 +46,8 @@ interface LexaCardContentProps {
  * TODO: Daily/Weekly challenges: quizzes on words learned or seen daily/weekly
  * TODO: Report issues: incorrect translation, suggest improvements, etc
  * TODO: Settings shortcut (new ideas: reminders for daily/weekly quizzes)
+ *
+ * TODO: Gracefully handle if there's no internet -- use chrome.ai(<joke about not being connected>)
  */
 export function LexaCardContent({
   translation,

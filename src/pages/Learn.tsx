@@ -1,8 +1,17 @@
+import {
+  Alert,
+  Box,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from '@mui/material'
 import { useQuery } from '@tanstack/react-query'
-import React from 'react'
+import { FC } from 'react'
+import { Body2, Subtitle1 } from '../components/Typography'
 
-// Mock function to fetch words (replace with actual API call)
-const fetchWords = async () => {
+const fetchWords = async (): Promise<Word[]> => {
   return [
     { word: 'bonjour', translation: 'hello', partOfSpeech: 'interjection' },
     { word: 'merci', translation: 'thank you', partOfSpeech: 'interjection' },
@@ -10,37 +19,61 @@ const fetchWords = async () => {
   ]
 }
 
-const Learn: React.FC = () => {
+interface Word {
+  word: string
+  translation: string
+  partOfSpeech: string
+}
+
+interface Props {}
+
+export const Learn: FC<Props> = () => {
   const {
     data: words,
     isLoading,
     error,
-  } = useQuery({
+  } = useQuery<Word[]>({
     queryKey: ['words'],
     queryFn: fetchWords,
   })
 
-  if (isLoading) return <div className="text-center py-4">Loading...</div>
+  if (isLoading)
+    return (
+      <Box display="flex" justifyContent="center" py={4}>
+        <CircularProgress />
+      </Box>
+    )
+
   if (error)
     return (
-      <div className="text-center py-4 text-red-600">An error occurred</div>
+      <Box display="flex" justifyContent="center" py={4}>
+        <Alert severity="error">An error occurred</Alert>
+      </Box>
     )
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-800">Words to Learn</h2>
-      <ul className="space-y-3">
+    <Box display="flex" flexDirection="column" gap={4}>
+      <Typography variant="h5" color="textPrimary">
+        Words to Learn
+      </Typography>
+      <List disablePadding>
         {words?.map((word) => (
-          <li key={word.word} className="bg-white p-3 rounded-lg shadow-sm">
-            <div className="flex justify-between items-center">
-              <span className="font-medium text-gray-800">{word.word}</span>
-              <span className="text-sm text-gray-500">{word.partOfSpeech}</span>
-            </div>
-            <p className="text-gray-600 mt-1">{word.translation}</p>
-          </li>
+          <ListItem key={word.word} disablePadding>
+            <ListItemText
+              primary={
+                <Box display="flex" justifyContent="space-between">
+                  <Subtitle1 color="textPrimary">{word.word}</Subtitle1>
+                  <Body2 color="textSecondary">{word.partOfSpeech}</Body2>
+                </Box>
+              }
+              secondary={
+                <Body2 color="textSecondary">{word.translation}</Body2>
+              }
+            />
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Box>
   )
 }
 

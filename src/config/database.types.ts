@@ -21,8 +21,8 @@ export type Database = {
         Insert: {
           id?: string
           learning_goals?: string | null
-          learning_level: string
-          target_language: string
+          learning_level?: string
+          target_language?: string
           updated_at?: string
           user_id: string
         }
@@ -76,7 +76,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      learning_levels: "beginner" | "intermediate" | "advanced"
     }
     CompositeTypes: {
       [_ in never]: never

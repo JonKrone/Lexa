@@ -1,6 +1,4 @@
 import {
-  Box,
-  Button,
   IconButton,
   List,
   ListItem,
@@ -9,41 +7,47 @@ import {
 } from '@mui/material'
 import { Trash2 } from 'lucide-react'
 import { FC } from 'react'
+import { urlIsValid } from '../lib/storage'
 import {
   useAddIgnoredSite,
   useIgnoredSites,
   useRemoveIgnoredSite,
 } from '../queries/ignored-sites'
+import { SubmitButton } from './SubmitButton'
 import { H5 } from './Typography'
 
 interface Props {}
 
 export const IgnoredSitesManager: FC<Props> = () => {
   const { data: ignoredSites = [], isFetched } = useIgnoredSites()
-  const { mutate: addSite } = useAddIgnoredSite()
-  const { mutate: removeSite } = useRemoveIgnoredSite()
+  const { mutateAsync: addSite } = useAddIgnoredSite()
+  const { mutateAsync: removeSite } = useRemoveIgnoredSite()
 
   if (!isFetched) return null
 
-  const handleAddSite = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const form = e.currentTarget
-    const newSite = form.elements.namedItem('newSite') as HTMLInputElement
-    if (newSite && newSite.value) {
-      addSite(newSite.value)
-      form.reset()
+  const handleAddSite = async (formData: FormData) => {
+    const newSite = formData.get('newSite') as string
+    if (!newSite) return
+
+    if (!urlIsValid(newSite)) {
+      console.error('Invalid URL')
+      // TODO: Show error to user
+      return
     }
+
+    await addSite(newSite)
+    formData.delete('newSite')
   }
 
-  const handleRemoveSite = (domain: string) => {
-    removeSite(domain)
+  const handleRemoveSite = async (url: string) => {
+    await removeSite(url)
   }
 
   return (
-    <Box>
-      <H5 gutterBottom>Manage Ignored Sites</H5>
+    <div>
+      <H5>Ignored Sites</H5>
       <form
-        onSubmit={handleAddSite}
+        action={handleAddSite}
         style={{ display: 'flex', alignItems: 'center' }}
       >
         {/**
@@ -53,33 +57,32 @@ export const IgnoredSitesManager: FC<Props> = () => {
           name="newSite"
           placeholder="i.e. lexa.com"
           variant="outlined"
-          size="small"
           sx={{ mr: 2, flexGrow: 1 }}
         />
-        <Button type="submit" variant="contained" color="primary" size="medium">
+        <SubmitButton variant="contained" size="medium">
           Add
-        </Button>
+        </SubmitButton>
       </form>
-      <List>
+      <List disablePadding>
         {ignoredSites.map((site) => (
           <ListItem
-            key={site.domain}
+            key={site.url}
+            disablePadding
             secondaryAction={
               <IconButton
                 edge="end"
                 aria-label="delete"
-                onClick={() => handleRemoveSite(site.domain)}
+                onClick={() => handleRemoveSite(site.url)}
                 color="error"
               >
                 <Trash2 />
               </IconButton>
             }
-            sx={{}}
           >
-            <ListItemText primary={site.domain} />
+            <ListItemText primary={site.url} />
           </ListItem>
         ))}
       </List>
-    </Box>
+    </div>
   )
 }
