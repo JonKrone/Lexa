@@ -76,12 +76,16 @@ export const queryClient = new QueryClient({
   }),
 })
 
+/**
+ * Persists the query client to chrome.storage.local
+ *
+ * We do this primarily to improve responsiveness and time to first useful paint.
+ */
 const [_unsubscribe, _initializationPromise] = persistQueryClient({
   queryClient,
   persister: createAsyncStoragePersister({
     storage: {
       getItem: (key) => {
-        console.log('getItem', key)
         return new Promise((resolve) => {
           chrome.storage.local.get(key, (result) => {
             resolve(result[key])
@@ -89,7 +93,6 @@ const [_unsubscribe, _initializationPromise] = persistQueryClient({
         })
       },
       setItem: (key, value) => {
-        console.log('setItem', key, value)
         return new Promise((resolve) => {
           chrome.storage.local.set({ [key]: value }, () => {
             resolve(undefined)

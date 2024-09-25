@@ -34,6 +34,9 @@ export const theme = createTheme({
     // }
   },
   spacing: 4,
+  typography: {
+    fontFamily: 'Geist Mono, Roboto Mono, Arial, sans-serif',
+  },
   components: {
     MuiButton: {
       defaultProps: {

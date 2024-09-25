@@ -1,5 +1,6 @@
 import { FC } from 'react'
 import { Route, Switch } from 'wouter'
+import './App.css'
 import { Layout } from './components/Layout'
 import { Confirm } from './pages/auth/confirm'
 import { Login } from './pages/auth/login'

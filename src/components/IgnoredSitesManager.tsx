@@ -1,5 +1,4 @@
 import {
-  Grow,
   IconButton,
   List,
   ListItem,
@@ -7,7 +6,7 @@ import {
   TextField,
 } from '@mui/material'
 import { Trash2 } from 'lucide-react'
-import { FC } from 'react'
+import { FC, useActionState } from 'react'
 import {
   useAddIgnoredSite,
   useIgnoredSites,
@@ -20,25 +19,31 @@ interface Props {}
 
 export const IgnoredSitesManager: FC<Props> = () => {
   const { data: ignoredSites = [], isFetched } = useIgnoredSites()
-  const { mutateAsync: addSite, error } = useAddIgnoredSite()
+  const { mutateAsync: addSite } = useAddIgnoredSite()
   const { mutateAsync: removeSite } = useRemoveIgnoredSite()
   const sortedIgnoredSites = ignoredSites.sort((a, b) =>
     a.url.localeCompare(b.url),
   )
 
-  const addSiteAction = async (formData: FormData) => {
-    const newSite = formData.get('newSite') as string
-    if (!newSite) return
+  // `useActionState` is helpful here to consolidate our error messages to one slice of behavior.
+  const [message, addSiteAction] = useActionState(
+    async (_prev: null | string, formData: FormData) => {
+      const newSite = formData.get('newSite') as string
+      if (!newSite) return 'Please enter a url'
 
-    // We need a handle on the promise so that the form is properly marked as pending but we also
-    // need to catch errors so they don't crash the app and instead populate the `error` state of
-    // the mutation.
-    try {
-      await addSite(newSite)
-    } catch (_) {}
+      // We need a handle on the promise so that the form is properly marked as pending but we also
+      // need to catch errors so they don't crash the app and instead populate the `error` state of
+      // the mutation.
+      try {
+        await addSite(newSite)
+      } catch (error: any) {
+        return error?.message
+      }
 
-    formData.delete('newSite')
-  }
+      formData.delete('newSite')
+    },
+    null,
+  )
 
   const handleRemoveSite = async (url: string) => {
     await removeSite(url)
@@ -64,11 +69,12 @@ export const IgnoredSitesManager: FC<Props> = () => {
             Add
           </SubmitButton>
         </div>
-        {error && (
+        {/* {error && (
           <Grow in>
             <Body2 color="error">{error.message}</Body2>
           </Grow>
-        )}
+        )} */}
+        {message && <Body2 color="error">{message}</Body2>}
       </form>
       <List disablePadding>
         {sortedIgnoredSites.map((site) => (

@@ -150,12 +150,18 @@ const LearningGoalsField = () => {
       <TextField
         id="learning-goals"
         multiline
-        rows={3}
-        draggable
+        minRows={3}
+        fullWidth
+        variant="outlined"
         placeholder="Describe your language learning goals here..."
         defaultValue={settings?.learning_goals ?? ''}
         onChange={(e) => {
           debouncedUpdateSetting({ learning_goals: e.target.value })
+        }}
+        slotProps={{
+          input: {
+            style: { resize: 'vertical' },
+          },
         }}
       />
     </FormControl>

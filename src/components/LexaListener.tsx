@@ -26,7 +26,6 @@ export const mountLexaListener = () => {
  */
 export const LexaListener: FC = () => {
   const { data: settings } = useSettings()
-  console.log('settings', settings)
 
   useEffect(() => {
     if (!settings) {
