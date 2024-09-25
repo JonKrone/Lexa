@@ -87,7 +87,7 @@ const TargetLanguageField = () => {
 
 const LearningLevelField = () => {
   const { data: settings } = useSettings()
-  const { mutate: updateSetting } = useUpdateSetting({ debounce: 350 })
+  const { mutate: updateSetting } = useUpdateSetting()
   const debouncedUpdateSetting = debounce(updateSetting, 350)
   const [currentLevel, setCurrentLevel] = React.useState<LearningLevel>(
     (settings?.learning_level as LearningLevel) ?? 'beginner',
@@ -121,6 +121,16 @@ const LearningLevelField = () => {
         ]}
         min={0}
         max={2}
+        sx={{
+          '& span.MuiSlider-markLabel': {
+            '&[data-index="0"]': {
+              left: '9% !important',
+            },
+            '&[data-index="2"]': {
+              left: '91% !important',
+            },
+          },
+        }}
       />
       <Caption color="text.secondary">{getLevelCaption(currentLevel)}</Caption>
     </FormControl>

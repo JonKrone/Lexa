@@ -21,8 +21,6 @@ export const App: FC = () => {
         <Route path="/auth/confirm" component={Confirm} />
         <Route path="*" component={NotFound} />
       </Switch>
-      {/* <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-      </Box> */}
     </Layout>
   )
 }

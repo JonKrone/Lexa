@@ -1,7 +1,7 @@
 import { Box, ClickAwayListener, Popper } from '@mui/material'
 import React, { ReactElement, useEffect, useRef, useState } from 'react'
-import { ShadowDOM } from './LexaPhrase-mui/ShadowDOM'
 import { Providers } from './Providers'
+import { ShadowDOM } from './ShadowDOM'
 
 const HOVER_DELAY = 350
 
@@ -21,9 +21,10 @@ export const HoverCard: React.FC<HoverCardProps> = ({
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleMouseEnter = () => {
+    onHover()
+
     hoverTimerRef.current = setTimeout(() => {
       setIsOpen(true)
-      onHover()
     }, HOVER_DELAY)
   }
 

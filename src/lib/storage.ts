@@ -10,10 +10,12 @@ export async function getIgnoredSites(): Promise<IgnoredSite[]> {
 
 export async function addIgnoredSite(url: string): Promise<void> {
   if (!urlIsValid(url)) {
-    throw new Error('Invalid domain')
+    throw new Error("That's an invalid url")
   }
   const ignoredSites = await getIgnoredSites()
-  if (isSiteIgnored(ignoredSites, url)) return
+  if (isSiteIgnored(ignoredSites, url)) {
+    throw new Error('Site already ignored')
+  }
 
   const normalizedUrl = normalizeUrl(url)
   console.log('normalizedUrl', normalizedUrl)
@@ -25,9 +27,6 @@ export async function addIgnoredSite(url: string): Promise<void> {
 }
 
 export async function removeIgnoredSite(url: string): Promise<void> {
-  if (!urlIsValid(url)) {
-    throw new Error('Invalid domain')
-  }
   const ignoredSites = await getIgnoredSites()
   const normalizedUrl = normalizeUrl(url)
   const newIgnoredSites = ignoredSites.filter(
@@ -51,14 +50,18 @@ function isSiteIgnored(sites: IgnoredSite[], url: string): boolean {
 
 /**
  * Supports domains with and without the www and any protocol (e.g., capacitor://, http://).
+ * Rejects invalid URLs like "..." or ";;;".
  */
 export function urlIsValid(url: string): boolean {
   try {
     const processedUrl = /^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(url)
       ? url
       : `http://${url}`
-    new URL(processedUrl)
-    return true
+    const parsedUrl = new URL(processedUrl)
+
+    // Check if the hostname contains at least one dot and only valid characters
+    const hostnameRegex = /^[a-zA-Z0-9]+([-.][a-zA-Z0-9]+)*\.[a-zA-Z]{2,}$/
+    return hostnameRegex.test(parsedUrl.hostname)
   } catch {
     return false
   }

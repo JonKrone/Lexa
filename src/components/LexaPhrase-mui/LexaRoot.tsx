@@ -1,5 +1,6 @@
 import { Box, useTheme } from '@mui/material'
 import React from 'react'
+import { usePrefetchTranslationDetails } from '../../queries/translation-details'
 import { HoverCard } from '../HoverCard'
 import { LexaCardContent } from './LexaCardContent'
 
@@ -15,12 +16,15 @@ export const LexaRoot: React.FC<LexaRootProps> = ({
   context,
 }) => {
   const theme = useTheme()
+  const prefetchTanslationDetails = usePrefetchTranslationDetails(
+    original,
+    translation,
+    context,
+  )
+
   return (
     <HoverCard
-      onHover={() => {
-        console.log('hover')
-        // TODO: prefetch translation details
-      }}
+      onHover={prefetchTanslationDetails}
       content={<LexaCardContent {...{ translation, original, context }} />}
     >
       <Box

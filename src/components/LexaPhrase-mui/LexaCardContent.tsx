@@ -12,7 +12,6 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useQuery } from '@tanstack/react-query'
 import { GenerateObjectResult } from 'ai'
 import {
   MessageSquareQuote,
@@ -21,13 +20,9 @@ import {
   ThumbsDown,
   ThumbsUp,
 } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
-import {
-  generateTranslationDetails,
-  ITranslationDetails,
-} from '../../ai/generateTranslationDetails'
-import { supabase } from '../../config/supabase'
-import { getPageLanguage, getPageTitle } from '../../lib/documentUtils'
+import React, { useState } from 'react'
+import { ITranslationDetails } from '../../ai/generateTranslationDetails'
+import { useTranslationDetails } from '../../queries/translation-details'
 
 type TabValue = 'details' | 'notes' | 'quiz'
 
@@ -38,6 +33,9 @@ interface LexaCardContentProps {
 }
 
 /**
+ * TODO: Before rendering the rest of the content, ask the user to write what they think the translation is
+ * TODO: If not logged in, show the sign up/in button
+ *
  * TODO: Allow users to add their own notes to the translation
  * TODO: Mastery Levels: New, Learning, Mastered based on..? Quiz progress; # of times seen; # of
  * times marked known
@@ -63,38 +61,9 @@ export function LexaCardContent({
   const [thumbsUp, setThumbsUp] = useState(false)
   const [thumbsDown, setThumbsDown] = useState(false)
 
-  useEffect(() => {
-    console.log('supabase', supabase)
-
-    const addData = async () => {
-      const result = await supabase.from('test_table').insert({
-        key: Date.now().toString().substring(8),
-      })
-      console.log('result', result)
-
-      return result
-    }
-    addData()
-  }, [])
-
   const {
     data: translationDetails = {} as GenerateObjectResult<ITranslationDetails>,
-  } = useQuery({
-    queryKey: ['translationDetails', context],
-    queryFn: async () => {
-      const inputs = {
-        word: original,
-        translation,
-        pageTitle: getPageTitle() ?? '',
-        surroundingContext: context,
-        url: window.location.href,
-        targetLanguage: 'English',
-        dialectOrRegion: getPageLanguage() ?? '',
-      }
-
-      return generateTranslationDetails(inputs)
-    },
-  })
+  } = useTranslationDetails(original, translation, context)
   console.log('translationDetails', translationDetails.object)
 
   const masteryLevel = 'Learning'
@@ -122,7 +91,7 @@ export function LexaCardContent({
         width: 300,
         display: 'flex',
         flexDirection: 'column',
-        height: '100%', // Adjust height as needed
+        height: '100%',
       }}
     >
       <CardHeader

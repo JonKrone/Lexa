@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import {
   IgnoredSite,
   addIgnoredSite,
@@ -13,23 +13,19 @@ export const useIgnoredSites = () =>
   })
 
 export const useAddIgnoredSite = () => {
-  const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: addIgnoredSite,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ignoredSites'] })
+    meta: {
+      invalidates: [['ignoredSites']],
     },
   })
 }
 
 export const useRemoveIgnoredSite = () => {
-  const queryClient = useQueryClient()
-
   return useMutation({
     mutationFn: removeIgnoredSite,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ignoredSites'] })
+    meta: {
+      invalidates: [['ignoredSites']],
     },
   })
 }

@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom/client'
 import { Providers } from '../Providers'
+import { ShadowDOM } from '../ShadowDOM'
 import { LexaRoot, LexaRootProps } from './LexaRoot'
-import { ShadowDOM } from './ShadowDOM'
 
 export function mountLexaRoot(range: Range, translation: LexaRootProps): void {
   // Create a wrapper element

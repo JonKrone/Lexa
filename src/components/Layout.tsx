@@ -2,7 +2,6 @@ import { BottomNavigation, BottomNavigationAction, Box } from '@mui/material'
 import { HomeIcon, School, SettingsIcon } from 'lucide-react'
 import { FC, Suspense } from 'react'
 import { Redirect, useLocation, useRoute } from 'wouter'
-import { isFullPageView } from '../lib/utils'
 import { useIsAuthenticated } from '../queries/auth'
 import SnowflakeBackground from './SnowflakeBackground'
 import { Body2, H2 } from './Typography'
@@ -10,7 +9,6 @@ import { Body2, H2 } from './Typography'
 export const Layout: FC<{ children: React.ReactNode }> = ({ children }) => {
   const [location, setLocation] = useLocation()
 
-  const isFullTabView = isFullPageView()
   const hasBottomNav = !useRoute(/^\/auth/)[0]
   const value = location.split('/')[1]
 
@@ -18,7 +16,7 @@ export const Layout: FC<{ children: React.ReactNode }> = ({ children }) => {
     <Box sx={{ display: 'flex', placeContent: 'center' }}>
       <SnowflakeBackground opacity={0.1} speed={0.1} density={0.5} />
       <Suspense fallback={<div>Loading...</div>}>
-        <Box sx={!isFullTabView ? { width: 350, height: 500, p: 2 } : {}}>
+        <Box sx={{ width: 350, height: 500, p: 2 }}>
           <AuthGuard>
             <header>
               <H2>Lexa</H2>

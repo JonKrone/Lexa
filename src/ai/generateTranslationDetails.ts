@@ -121,12 +121,12 @@ export async function generateTranslationDetails(
   const prompt = makeTranslationDetailsPrompt(inputs)
 
   const result = await generateObject({
+    system:
+      'You are a language tutor that provides concise, engaging linguistic and cultural information to help users learn a new language.',
     model: Models.openai.gpt4o,
     prompt,
     schema: TranslationDetailsSchema,
   })
-
-  console.log('result', result)
 
   return result
 }

@@ -3,7 +3,7 @@ import { CacheProvider } from '@emotion/react'
 import { ThemeProvider } from '@mui/material'
 import React, { useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom/client'
-import { theme } from '../../config/theme'
+import { theme } from '../config/theme'
 
 const cacheCache = new Map()
 
