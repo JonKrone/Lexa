@@ -2,9 +2,11 @@ import { User } from '@supabase/supabase-js'
 import {
   queryOptions,
   useMutation,
+  useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { supabase } from '../config/supabase'
+import { sendExtensionMessage } from '../lib/extension'
 
 const authQueries = {
   user: () =>
@@ -15,7 +17,12 @@ const authQueries = {
   session: () =>
     queryOptions({
       queryKey: ['auth', 'session'],
-      queryFn: () => fetchSession(),
+      queryFn: async () => {
+        console.log('fetching session')
+        const data = await fetchSession()
+        console.log('session', data)
+        return data
+      },
     }),
 }
 
@@ -34,8 +41,8 @@ export const useSession = () =>
 
 export const useIsAuthenticated = () => useSession() !== undefined
 
-export const useSignInWithOtp = () =>
-  useMutation({
+export const useSignInWithOtp = () => {
+  return useMutation({
     mutationFn: async (email: string) => {
       const extensionUrl = chrome.runtime.getURL('')
       const { data, error } = await supabase.auth.signInWithOtp({
@@ -46,6 +53,33 @@ export const useSignInWithOtp = () =>
       })
 
       if (error) throw error
+
+      // const data = {
+      //   email,
+      // } as any
+
       return data
     },
+    meta: {
+      invalidates: [['auth']],
+    },
   })
+}
+
+export const useSignOut = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+
+      sendExtensionMessage({
+        type: 'SIGN_OUT',
+        payload: undefined,
+      })
+
+      queryClient.clear()
+      queryClient.getQueryCache().clear()
+    },
+  })
+}

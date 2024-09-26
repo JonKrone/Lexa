@@ -22,8 +22,11 @@ import {
 } from 'lucide-react'
 import React, { useState } from 'react'
 import { ITranslationDetails } from '../../ai/generateTranslationDetails'
+import { useUser } from '../../queries/auth'
 import { useTranslationDetails } from '../../queries/translation-details'
 
+import { LoginForm } from '../LoginForm'
+import { H6 } from '../Typography'
 type TabValue = 'details' | 'notes' | 'quiz'
 
 interface LexaCardContentProps {
@@ -64,16 +67,11 @@ export function LexaCardContent({
   const {
     data: translationDetails = {} as GenerateObjectResult<ITranslationDetails>,
   } = useTranslationDetails(original, translation, context)
-  console.log('translationDetails', translationDetails.object)
 
   const masteryLevel = 'Learning'
   const isFavorited = false
   const onFavoriteToggle = () => {}
   const details = translationDetails.object
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: TabValue) => {
-    setTabValue(newValue)
-  }
 
   const handleThumbsUp = () => {
     setThumbsUp((prev) => !prev)
@@ -94,140 +92,146 @@ export function LexaCardContent({
         height: '100%',
       }}
     >
-      <CardHeader
-        title={
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: '1fr auto',
-              alignItems: 'flex-start',
-              gap: 2,
-            }}
-          >
-            <Box>
-              <Typography variant="h6">{translation}</Typography>
-              <Typography variant="subtitle1" color="textSecondary">
-                {original} {details?.wordGender && `(${details?.wordGender})`}
-              </Typography>
-            </Box>
+      <AuthGuard>
+        <CardHeader
+          title={
             <Box
               sx={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(3, auto)',
-                gap: 0.5,
+                gridTemplateColumns: '1fr auto',
+                alignItems: 'flex-start',
+                gap: 2,
               }}
             >
-              <StyledIconButton
-                onClick={onFavoriteToggle}
-                aria-label="favorite"
-              >
-                <Star fill={isFavorited ? 'gold' : 'gray'} />
-              </StyledIconButton>
-              <StyledIconButton
-                onClick={handleThumbsUp}
-                color={thumbsUp ? 'primary' : 'default'}
-                aria-label="thumbs up"
+              <Box>
+                <Typography variant="h6">{translation}</Typography>
+                <Typography variant="subtitle1" color="textSecondary">
+                  {original} {details?.wordGender && `(${details?.wordGender})`}
+                </Typography>
+              </Box>
+              <Box
                 sx={{
-                  padding: 1,
-                  '& > svg': {
-                    height: 20,
-                    width: 20,
-                  },
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, auto)',
+                  gap: 0.5,
                 }}
               >
-                <ThumbsUp />
-              </StyledIconButton>
-              <StyledIconButton
-                onClick={handleThumbsDown}
-                color={thumbsDown ? 'primary' : 'default'}
-                aria-label="thumbs down"
-              >
-                <ThumbsDown />
-              </StyledIconButton>
+                <StyledIconButton
+                  onClick={onFavoriteToggle}
+                  aria-label="favorite"
+                >
+                  <Star fill={isFavorited ? 'gold' : 'gray'} />
+                </StyledIconButton>
+                <StyledIconButton
+                  onClick={handleThumbsUp}
+                  color={thumbsUp ? 'primary' : 'default'}
+                  aria-label="thumbs up"
+                  sx={{
+                    padding: 1,
+                    '& > svg': {
+                      height: 20,
+                      width: 20,
+                    },
+                  }}
+                >
+                  <ThumbsUp />
+                </StyledIconButton>
+                <StyledIconButton
+                  onClick={handleThumbsDown}
+                  color={thumbsDown ? 'primary' : 'default'}
+                  aria-label="thumbs down"
+                >
+                  <ThumbsDown />
+                </StyledIconButton>
+              </Box>
             </Box>
+          }
+        />
+        <CardContent sx={{ pt: 0, pb: 0, flexGrow: 1 }}>
+          <Tabs
+            value={tabValue}
+            onChange={(_, val) => setTabValue(val)}
+            variant="fullWidth"
+            indicatorColor="primary"
+            textColor="primary"
+          >
+            <Tab label="Details" value="details" />
+            <Tab label="Notes" value="notes" />
+            <Tab label="Quiz" value="quiz" />
+          </Tabs>
+          <Box sx={{ marginTop: 2, overflowY: 'auto', height: 250 }}>
+            {tabValue === 'details' && (
+              <Box>
+                <Typography variant="body2">
+                  Mastery Level: {masteryLevel}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                  Contextual Examples
+                </Typography>
+                <Typography variant="body2">
+                  {details?.formalUsage}
+                  <br />
+                  {details?.informalUsage}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                  Other Ways to Say
+                </Typography>
+                <Typography variant="body2">
+                  {details?.otherWaysToSay.map(
+                    ({ translation, explanation }) => (
+                      <React.Fragment key={translation}>
+                        {translation} - {explanation}
+                        <br />
+                      </React.Fragment>
+                    ),
+                  )}
+                  <br />
+                  Antonyms: {details?.antonyms.join(', ')}
+                </Typography>
+                <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                  Cultural Insights
+                </Typography>
+                <Typography variant="body2">
+                  {details?.culturalInsights}
+                </Typography>
+              </Box>
+            )}
+            {tabValue === 'notes' && (
+              <Box>
+                <Typography variant="subtitle1">Your Notes</Typography>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  minRows={6}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add your personal notes here..."
+                />
+              </Box>
+            )}
+            {tabValue === 'quiz' && (
+              <Box>
+                <Typography variant="subtitle1">Quick Quiz</Typography>
+                <Typography variant="body2">
+                  Quizzes are coming soon!
+                </Typography>
+                <Button variant="contained" sx={{ marginTop: 2 }}>
+                  Start Quiz
+                </Button>
+              </Box>
+            )}
           </Box>
-        }
-      />
-      <CardContent sx={{ pt: 0, pb: 0, flexGrow: 1 }}>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant="fullWidth"
-          indicatorColor="primary"
-          textColor="primary"
-        >
-          <Tab label="Details" value="details" />
-          <Tab label="Notes" value="notes" />
-          <Tab label="Quiz" value="quiz" />
-        </Tabs>
-        <Box sx={{ marginTop: 2, overflowY: 'auto', height: 250 }}>
-          {tabValue === 'details' && (
-            <Box>
-              <Typography variant="body2">
-                Mastery Level: {masteryLevel}
-              </Typography>
-              <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                Contextual Examples
-              </Typography>
-              <Typography variant="body2">
-                {details?.formalUsage}
-                <br />
-                {details?.informalUsage}
-              </Typography>
-              <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                Other Ways to Say
-              </Typography>
-              <Typography variant="body2">
-                {details?.otherWaysToSay.map(({ translation, explanation }) => (
-                  <React.Fragment key={translation}>
-                    {translation} - {explanation}
-                    <br />
-                  </React.Fragment>
-                ))}
-                <br />
-                Antonyms: {details?.antonyms.join(', ')}
-              </Typography>
-              <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                Cultural Insights
-              </Typography>
-              <Typography variant="body2">
-                {details?.culturalInsights}
-              </Typography>
-            </Box>
-          )}
-          {tabValue === 'notes' && (
-            <Box>
-              <Typography variant="subtitle1">Your Notes</Typography>
-              <TextField
-                variant="outlined"
-                fullWidth
-                multiline
-                minRows={6}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add your personal notes here..."
-              />
-            </Box>
-          )}
-          {tabValue === 'quiz' && (
-            <Box>
-              <Typography variant="subtitle1">Quick Quiz</Typography>
-              <Typography variant="body2">Quizzes are coming soon!</Typography>
-              <Button variant="contained" sx={{ marginTop: 2 }}>
-                Start Quiz
-              </Button>
-            </Box>
-          )}
-        </Box>
-      </CardContent>
-      <CardActions sx={{ justifyContent: 'flex-end', padding: '8px 16px' }}>
-        <IconButton aria-label="feedback">
-          <MessageSquareQuote />
-        </IconButton>
-        <IconButton aria-label="settings">
-          <Settings />
-        </IconButton>
-      </CardActions>
+        </CardContent>
+        <CardActions sx={{ justifyContent: 'flex-end', padding: '8px 16px' }}>
+          <IconButton aria-label="feedback">
+            <MessageSquareQuote />
+          </IconButton>
+          <IconButton aria-label="settings">
+            <Settings />
+          </IconButton>
+        </CardActions>
+      </AuthGuard>
     </Card>
   )
 }
@@ -240,47 +244,26 @@ const StyledIconButton = styled(IconButton)({
   },
 })
 
-interface StyledTabsProps {
-  children?: React.ReactNode
-  value: number
-  onChange: (event: React.SyntheticEvent, newValue: number) => void
+interface AuthGuardProps {
+  children: React.ReactNode
 }
 
-const StyledTabs = styled((props: StyledTabsProps) => (
-  <Tabs
-    {...props}
-    TabIndicatorProps={{
-      style: { display: 'none' },
-      // children: <span className="MuiTabs-indicatorSpan" />
-    }}
-  />
-))({
-  '& .MuiTabs-indicator': {
-    display: 'flex',
-    justifyContent: 'center',
-    backgroundColor: 'transparent',
-  },
-  '& .MuiTabs-indicatorSpan': {
-    maxWidth: 40,
-    width: '100%',
-    backgroundColor: '#635ee7',
-  },
-})
+const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
+  const user = useUser()
+  // const session = useSession()
+  // console.log('session', session)
+  // console.log('user', user)
 
-interface StyledTabProps {
-  label: string
+  if (!user) {
+    return (
+      <>
+        <CardHeader title={<H6>Sign in to continue</H6>} />
+        <CardContent>
+          <LoginForm />
+        </CardContent>
+      </>
+    )
+  }
+
+  return <>{children}</>
 }
-
-const StyledTab = styled((props: StyledTabProps) => (
-  <Tab disableRipple {...props} />
-))(({ theme }) => ({
-  textTransform: 'none',
-  fontWeight: theme.typography.fontWeightRegular,
-  fontSize: theme.typography.pxToRem(15),
-  marginRight: theme.spacing(1),
-  minHeight: 32,
-  padding: '8px 12px',
-  '&.Mui-focusVisible': {
-    backgroundColor: 'rgba(100, 95, 228, 0.32)',
-  },
-}))

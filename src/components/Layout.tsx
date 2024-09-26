@@ -90,9 +90,12 @@ const NavAction = styled(BottomNavigationAction)`
 
 const AuthGuard: FC<{ children: React.ReactNode }> = ({ children }) => {
   const [location] = useLocation()
+  const [isAuthPage] = useRoute(/^\/auth/)
   const isAuthenticated = useIsAuthenticated()
+  // console.log('info:', useUser(), useSession(), useSettings().data)
+  console.log('isAuthenticated', isAuthenticated)
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isAuthPage) {
     return <Redirect to={`/auth/login?next=${encodeURIComponent(location)}`} />
   }
 

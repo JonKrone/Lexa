@@ -109,3 +109,5 @@ const [_unsubscribe, _initializationPromise] = persistQueryClient({
     },
   }),
 })
+
+;(window as any).qc = queryClient

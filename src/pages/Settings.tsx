@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Checkbox,
   Dialog,
@@ -12,6 +11,7 @@ import {
   MenuItem,
   Select,
   Slider,
+  Stack,
   TextField,
   Typography,
 } from '@mui/material'
@@ -20,6 +20,7 @@ import { IgnoredSitesManager } from '../components/IgnoredSitesManager'
 import { Caption } from '../components/Typography'
 import { Database } from '../config/database.types'
 import { debounce } from '../lib/utils'
+import { useSignOut } from '../queries/auth'
 import { useSettings, useUpdateSetting } from '../queries/settings'
 
 type LearningLevel = Database['public']['Enums']['learning_levels']
@@ -32,7 +33,7 @@ const Settings: React.FC = () => {
   }
 
   return (
-    <Box sx={{ '& > *': { marginBottom: 3 } }}>
+    <Stack spacing={4}>
       <Typography variant="h5" gutterBottom>
         Settings
       </Typography>
@@ -57,7 +58,18 @@ const Settings: React.FC = () => {
           <Button onClick={handleClose}>Close</Button>
         </DialogActions>
       </Dialog>
-    </Box>
+      <LogoutButton />
+    </Stack>
+  )
+}
+
+const LogoutButton = () => {
+  const { mutate: signOut } = useSignOut()
+
+  return (
+    <Button variant="contained" fullWidth onClick={() => signOut()}>
+      Logout
+    </Button>
   )
 }
 

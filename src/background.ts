@@ -31,3 +31,11 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
     })
   }
 })
+
+// onExtensionMessage('SIGN_IN_WITH_OTP', (data) => {
+//   console.log('Received SIGN_IN_WITH_OTP, background.js', data)
+//   queryClient.setQueryData(['auth', 'user'], data)
+//   queryClient.invalidateQueries({ queryKey: ['auth'] })
+//   queryClient.invalidateQueries({ queryKey: ['auth', 'user'] })
+//   queryClient.invalidateQueries({ queryKey: ['auth', 'session'] })
+// })

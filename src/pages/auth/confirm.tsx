@@ -1,19 +1,15 @@
+import { AuthError } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { supabase } from '../../config/supabase'
+import { sendExtensionMessage } from '../../lib/extension'
 
-export const Confirm = () => {
+import { Alert, AlertTitle, Box, Paper } from '@mui/material'
+import { FC } from 'react'
+import { Body2, H6 } from '../../components/Typography'
+
+export const Confirm: FC = () => {
   const authParams = useAuthParams()
-  console.log('authParams', authParams)
-
-  if ('error' in authParams && authParams.error) {
-    return (
-      <div>
-        <div>Error: {authParams.error}</div>
-        <div>Error Code: {authParams.error_code}</div>
-        <div>Error Description: {authParams.error_description}</div>
-      </div>
-    )
-  }
+  const [error, setError] = useState<AuthError | null>(null)
 
   useEffect(() => {
     if (!authParams.token_hash) return
@@ -23,22 +19,62 @@ export const Confirm = () => {
         token_hash: authParams.token_hash,
         type: 'magiclink',
       })
-      console.log('verifyOtp result:', result)
+
+      if (result.error) {
+        setError(result.error)
+        return
+      }
+
+      if (!result.data.user) {
+        throw new Error(
+          'No user found on successful OTP verification. Needs investigation.',
+        )
+      }
+
+      sendExtensionMessage({
+        type: 'SIGN_IN_WITH_OTP',
+        payload: result.data.user,
+      })
     }
 
     verifyOtp()
-  }, [authParams.access_token])
+  }, [authParams.token_hash])
+
+  if ('error' in authParams && authParams.error) {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Alert severity="error">
+          <AlertTitle>Authentication Error</AlertTitle>
+          <Body2>Error: {authParams.error}</Body2>
+          <Body2>Error Code: {authParams.error_code}</Body2>
+          <Body2>Description: {authParams.error_description}</Body2>
+        </Alert>
+      </Box>
+    )
+  }
+
+  if (error) {
+    // TODO: Not a fan of this error display. Should standardize on something.
+    // dev-images/poor-auth-error.jpg)
+    return (
+      <Box sx={{ p: 2 }}>
+        <Alert severity="error">
+          <AlertTitle>Authentication Error</AlertTitle>
+          <Body2>Message: {error.message}</Body2>
+          {error.code && <Body2>Error Code: {error.code}</Body2>}
+          {error.status && <Body2>Status: {error.status}</Body2>}
+        </Alert>
+      </Box>
+    )
+  }
 
   return (
-    <div>
-      Confirming
-      <div>access_token: {authParams?.access_token}</div>
-      <div>expires_at: {authParams?.expires_at}</div>
-      <div>expires_in: {authParams?.expires_in}</div>
-      <div>refresh_token: {authParams?.refresh_token}</div>
-      <div>token_type: {authParams?.token_type}</div>
-      <div>type: {authParams?.type}</div>
-    </div>
+    <Box sx={{ p: 2 }}>
+      <Paper elevation={3} sx={{ p: 2 }}>
+        <H6 gutterBottom>Confirming Authentication</H6>
+        <Body2>Please wait while we verify your magic link...</Body2>
+      </Paper>
+    </Box>
   )
 }
 

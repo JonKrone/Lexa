@@ -29,7 +29,7 @@ export const LexaListener: FC = () => {
 
   useEffect(() => {
     if (!settings) {
-      console.log('Settings not available')
+      console.log('Lexa: You are not logged in. Not starting.')
       return
     }
 
