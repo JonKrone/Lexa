@@ -17,7 +17,7 @@ import {
 } from '@mui/material'
 import React from 'react'
 import { IgnoredSitesManager } from '../components/IgnoredSitesManager'
-import { Caption } from '../components/Typography'
+import { Caption, H5 } from '../components/Typography'
 import { Database } from '../config/database.types'
 import { debounce } from '../lib/utils'
 import { useSignOut } from '../queries/auth'
@@ -26,23 +26,38 @@ import { useSettings, useUpdateSetting } from '../queries/settings'
 type LearningLevel = Database['public']['Enums']['learning_levels']
 
 const Settings: React.FC = () => {
-  const [open, setOpen] = React.useState(false)
-
-  const handleClose = () => {
-    setOpen(false)
-  }
-
   return (
     <Stack spacing={4}>
-      <Typography variant="h5" gutterBottom>
-        Settings
-      </Typography>
+      <H5 gutterBottom>Settings</H5>
 
       <TargetLanguageField />
       <LearningLevelField />
       <LearningGoalsField />
-
       <IgnoredSitesManager />
+
+      <AdvancedSettingsButton />
+      <LogoutButton />
+    </Stack>
+  )
+}
+
+const LogoutButton = () => {
+  const { mutate: signOut } = useSignOut()
+
+  return (
+    <Button variant="contained" fullWidth onClick={() => signOut()}>
+      Logout
+    </Button>
+  )
+}
+
+const AdvancedSettingsButton = () => {
+  const [open, setOpen] = React.useState(false)
+
+  const handleClose = () => setOpen(false)
+
+  return (
+    <>
       <Button variant="contained" fullWidth onClick={() => setOpen(true)}>
         Advanced Settings
       </Button>
@@ -58,18 +73,7 @@ const Settings: React.FC = () => {
           <Button onClick={handleClose}>Close</Button>
         </DialogActions>
       </Dialog>
-      <LogoutButton />
-    </Stack>
-  )
-}
-
-const LogoutButton = () => {
-  const { mutate: signOut } = useSignOut()
-
-  return (
-    <Button variant="contained" fullWidth onClick={() => signOut()}>
-      Logout
-    </Button>
+    </>
   )
 }
 

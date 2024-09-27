@@ -5,7 +5,9 @@ import {
   CardActions,
   CardContent,
   CardHeader,
+  Fade,
   IconButton,
+  Popper,
   styled,
   Tab,
   Tabs,
@@ -14,19 +16,22 @@ import {
 } from '@mui/material'
 import { GenerateObjectResult } from 'ai'
 import {
+  Check,
+  ChevronsDown,
+  ChevronsUp,
   MessageSquareQuote,
   Settings,
   Star,
-  ThumbsDown,
-  ThumbsUp,
+  X,
 } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useActionState, useState } from 'react'
 import { ITranslationDetails } from '../../ai/generateTranslationDetails'
 import { useUser } from '../../queries/auth'
 import { useTranslationDetails } from '../../queries/translation-details'
 
 import { LoginForm } from '../LoginForm'
-import { H6 } from '../Typography'
+import { H6, Subtitle1, Subtitle2 } from '../Typography'
+
 type TabValue = 'details' | 'notes' | 'quiz'
 
 interface LexaCardContentProps {
@@ -105,9 +110,10 @@ export function LexaCardContent({
             >
               <Box>
                 <Typography variant="h6">{translation}</Typography>
-                <Typography variant="subtitle1" color="textSecondary">
-                  {original} {details?.wordGender && `(${details?.wordGender})`}
-                </Typography>
+                <QuickCheckQuiz
+                  original={original}
+                  wordGender={details?.wordGender}
+                />
               </Box>
               <Box
                 sx={{
@@ -121,27 +127,6 @@ export function LexaCardContent({
                   aria-label="favorite"
                 >
                   <Star fill={isFavorited ? 'gold' : 'gray'} />
-                </StyledIconButton>
-                <StyledIconButton
-                  onClick={handleThumbsUp}
-                  color={thumbsUp ? 'primary' : 'default'}
-                  aria-label="thumbs up"
-                  sx={{
-                    padding: 1,
-                    '& > svg': {
-                      height: 20,
-                      width: 20,
-                    },
-                  }}
-                >
-                  <ThumbsUp />
-                </StyledIconButton>
-                <StyledIconButton
-                  onClick={handleThumbsDown}
-                  color={thumbsDown ? 'primary' : 'default'}
-                  aria-label="thumbs down"
-                >
-                  <ThumbsDown />
                 </StyledIconButton>
               </Box>
             </Box>
@@ -243,6 +228,139 @@ const StyledIconButton = styled(IconButton)({
     width: 20,
   },
 })
+
+interface QuickCheckQuizProps {
+  original: string
+  wordGender: string
+  afterSubmit: (success: boolean) => void
+}
+
+const normalizeString = (
+  str: string,
+  removeDiacritics: boolean = true,
+): string => {
+  let normalizedStr = str
+    .replace(/\s+/g, ' ') // remove extra spaces
+    .trim()
+    .toLowerCase()
+
+  if (removeDiacritics) {
+    normalizedStr = normalizedStr
+      .normalize('NFD') // break up accented characters into their base characters and diacritics
+      .replace(/[\u0300-\u036f]/g, '') // remove the diacritics
+  }
+
+  return normalizedStr
+}
+
+const areStringsMatching = (a: string, b: string): boolean =>
+  normalizeString(a) === normalizeString(b)
+
+const QuickCheckQuiz: React.FC<QuickCheckQuizProps> = ({
+  original,
+  afterSubmit,
+  wordGender,
+}) => {
+  // const { mutate: createWordInteraction } = useCreateWordInteraction()
+
+  const [result, action] = useActionState((prev: any, formData: FormData) => {
+    const userAttempt = formData.get('quickCheck') as string
+    const success = areStringsMatching(userAttempt, original)
+
+    afterSubmit?.(success)
+    return { success }
+  }, null)
+
+  const CustomTooltip: React.FC<{
+    title: string
+    children: React.ReactNode
+  }> = ({ title, children }) => {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
+    const [open, setOpen] = useState(false)
+
+    const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
+      setAnchorEl(event.currentTarget)
+      setOpen(true)
+    }
+
+    const handleMouseLeave = () => {
+      setOpen(false)
+    }
+
+    const content =
+      typeof title === 'string' ? (
+        <Box sx={{ bgcolor: 'background.paper', p: 1, px: 2, borderRadius: 1 }}>
+          <Subtitle2>{title}</Subtitle2>
+        </Box>
+      ) : (
+        title
+      )
+
+    return (
+      <>
+        <span onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+          {children}
+        </span>
+        <Popper open={open} anchorEl={anchorEl} disablePortal>
+          {content}
+        </Popper>
+      </>
+    )
+  }
+
+  if (result) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Subtitle1 color="textSecondary">
+          {original}
+          {wordGender && ` (${wordGender})`}
+        </Subtitle1>
+        <Fade in={true}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {result.success ? (
+              <Check color="green" size={20} />
+            ) : (
+              <X color="red" size={20} />
+            )}
+            <CustomTooltip title="See more often">
+              <IconButton>
+                <ChevronsUp color="orange" size={20} />
+              </IconButton>
+            </CustomTooltip>
+            <CustomTooltip title="See less often">
+              <IconButton>
+                <ChevronsDown color="lightblue" size={20} />
+              </IconButton>
+            </CustomTooltip>
+          </div>
+        </Fade>
+      </Box>
+    )
+  }
+
+  return (
+    <form action={action}>
+      <TextField
+        slotProps={{
+          input: {
+            slotProps: {
+              input: {
+                sx: {
+                  py: 1,
+                  px: 2,
+                },
+              },
+            },
+          },
+        }}
+        name="quickCheck"
+        variant="outlined"
+        fullWidth
+        placeholder="Your translation..."
+      />
+    </form>
+  )
+}
 
 interface AuthGuardProps {
   children: React.ReactNode
