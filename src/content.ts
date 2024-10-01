@@ -1,6 +1,6 @@
 import './env'
 
-import { mountLexaListener } from './components/LexaListener'
+import { mountLexaListener } from './components/Lexa/mountLexaListener'
 import { queryClient } from './config/react-query'
 import { supabase } from './config/supabase'
 import {

@@ -1,5 +1,5 @@
 import { ITranslation } from '../ai/generatePageTranslations'
-import { mountLexaRoot } from '../components/LexaPhrase-mui/mountLexaRoot'
+import { mountLexaRoot } from '../components/Lexa/mountLexaRoot'
 
 const STOP_AFTER_FIRST_MATCH = false
 

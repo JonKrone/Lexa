@@ -92,8 +92,8 @@ const AuthGuard: FC<{ children: React.ReactNode }> = ({ children }) => {
   const [location] = useLocation()
   const [isAuthPage] = useRoute(/^\/auth/)
   const isAuthenticated = useIsAuthenticated()
-  console.log('Main App isAuthenticated', isAuthenticated)
 
+  // If not authenticated and not on an auth page, redirect to login
   if (!isAuthenticated && !isAuthPage) {
     let redirectUrl = '/auth/login'
     if (location !== '/' && location !== '/index.html') {
@@ -102,6 +102,15 @@ const AuthGuard: FC<{ children: React.ReactNode }> = ({ children }) => {
     }
 
     return <Redirect to={redirectUrl} />
+  }
+
+  // If authenticated and on an auth page, redirect to home or where the user was headed
+  // This is the normal flow after login
+  if (isAuthenticated && isAuthPage) {
+    const params = new URLSearchParams(window.location.search)
+    const nextParam = params.get('next')
+    const nextPath = nextParam ? decodeURIComponent(nextParam) : '/home'
+    return <Redirect to={nextPath} />
   }
 
   return children

@@ -20,6 +20,5 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 
 onExtensionMessage<SignOutMessage>('SIGN_OUT', () => {
   console.log('Background Received SIGN_OUT')
-  console.log('queryClient', queryClient)
   queryClient.clear()
 })

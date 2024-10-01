@@ -21,15 +21,12 @@ import { IgnoredSitesManager } from '../components/IgnoredSitesManager'
 import { Caption, H5 } from '../components/Typography'
 import { Database } from '../config/database.types'
 import { debounce } from '../lib/utils'
-import { useSignOut, useUser } from '../queries/auth'
+import { useSignOut } from '../queries/auth'
 import { useSettings, useUpdateSetting } from '../queries/settings'
 
 type LearningLevel = Database['public']['Enums']['learning_levels']
 
 const Settings: React.FC = () => {
-  const user = useUser()
-  console.log('user', user)
-
   return (
     <Stack spacing={4}>
       <H5 gutterBottom>Settings</H5>
