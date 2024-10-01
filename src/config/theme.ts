@@ -41,6 +41,7 @@ export const theme = createTheme({
     MuiButton: {
       defaultProps: {
         size: 'small',
+        variant: 'contained',
       },
     },
     MuiIconButton: {

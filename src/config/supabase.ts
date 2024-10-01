@@ -20,9 +20,10 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
   auth: {
     storageKey: 'lexa-auth',
     storage: storageAdapter,
+    // debug: true,
   },
 })
 
 if (__DEBUG__) {
-  ;(window as any).supabase = supabase
+  ;(globalThis as any).supabase = supabase
 }

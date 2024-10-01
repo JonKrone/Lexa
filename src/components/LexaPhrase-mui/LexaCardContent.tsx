@@ -7,8 +7,6 @@ import {
   CardHeader,
   Fade,
   IconButton,
-  Popper,
-  styled,
   Tab,
   Tabs,
   TextField,
@@ -26,11 +24,12 @@ import {
 } from 'lucide-react'
 import React, { useActionState, useState } from 'react'
 import { ITranslationDetails } from '../../ai/generateTranslationDetails'
-import { useUser } from '../../queries/auth'
+import { useSession, useUser } from '../../queries/auth'
 import { useTranslationDetails } from '../../queries/translation-details'
 
 import { LoginForm } from '../LoginForm'
-import { H6, Subtitle1, Subtitle2 } from '../Typography'
+import { ShadowSafeTooltip } from '../ShadowSafeTooltip'
+import { H6, Subtitle1 } from '../Typography'
 
 type TabValue = 'details' | 'notes' | 'quiz'
 
@@ -99,37 +98,44 @@ export function LexaCardContent({
     >
       <AuthGuard>
         <CardHeader
+          sx={{
+            pb: 0,
+          }}
           title={
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto',
-                alignItems: 'flex-start',
-                gap: 2,
-              }}
-            >
-              <Box>
-                <Typography variant="h6">{translation}</Typography>
-                <QuickCheckQuiz
-                  original={original}
-                  wordGender={details?.wordGender}
-                />
-              </Box>
+            <>
               <Box
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(3, auto)',
-                  gap: 0.5,
+                  gridTemplateColumns: '1fr auto',
+                  alignItems: 'flex-start',
+                  gap: 2,
                 }}
               >
-                <StyledIconButton
-                  onClick={onFavoriteToggle}
-                  aria-label="favorite"
+                <Box>
+                  <Typography variant="h6">{translation}</Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(3, auto)',
+                    gap: 0.5,
+                  }}
                 >
-                  <Star fill={isFavorited ? 'gold' : 'gray'} />
-                </StyledIconButton>
+                  <ShadowSafeTooltip title="Favorite">
+                    <IconButton
+                      onClick={onFavoriteToggle}
+                      aria-label="favorite"
+                    >
+                      <Star fill={isFavorited ? 'gold' : 'gray'} size={20} />
+                    </IconButton>
+                  </ShadowSafeTooltip>
+                </Box>
               </Box>
-            </Box>
+              <QuickCheckQuiz
+                original={original}
+                wordGender={details?.wordGender}
+              />
+            </>
           }
         />
         <CardContent sx={{ pt: 0, pb: 0, flexGrow: 1 }}>
@@ -221,18 +227,10 @@ export function LexaCardContent({
   )
 }
 
-const StyledIconButton = styled(IconButton)({
-  padding: 1,
-  '& > svg': {
-    height: 20,
-    width: 20,
-  },
-})
-
 interface QuickCheckQuizProps {
   original: string
   wordGender: string
-  afterSubmit: (success: boolean) => void
+  afterSubmit?: (success: boolean) => void
 }
 
 const normalizeString = (
@@ -271,67 +269,37 @@ const QuickCheckQuiz: React.FC<QuickCheckQuizProps> = ({
     return { success }
   }, null)
 
-  const CustomTooltip: React.FC<{
-    title: string
-    children: React.ReactNode
-  }> = ({ title, children }) => {
-    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
-    const [open, setOpen] = useState(false)
-
-    const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
-      setAnchorEl(event.currentTarget)
-      setOpen(true)
-    }
-
-    const handleMouseLeave = () => {
-      setOpen(false)
-    }
-
-    const content =
-      typeof title === 'string' ? (
-        <Box sx={{ bgcolor: 'background.paper', p: 1, px: 2, borderRadius: 1 }}>
-          <Subtitle2>{title}</Subtitle2>
-        </Box>
-      ) : (
-        title
-      )
-
-    return (
-      <>
-        <span onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-          {children}
-        </span>
-        <Popper open={open} anchorEl={anchorEl} disablePortal>
-          {content}
-        </Popper>
-      </>
-    )
-  }
-
   if (result) {
     return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+        }}
+      >
         <Subtitle1 color="textSecondary">
           {original}
           {wordGender && ` (${wordGender})`}
         </Subtitle1>
-        <Fade in={true}>
+        <Fade in>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             {result.success ? (
               <Check color="green" size={20} />
             ) : (
               <X color="red" size={20} />
             )}
-            <CustomTooltip title="See more often">
+            <ShadowSafeTooltip title="See more often">
               <IconButton>
                 <ChevronsUp color="orange" size={20} />
               </IconButton>
-            </CustomTooltip>
-            <CustomTooltip title="See less often">
+            </ShadowSafeTooltip>
+            <ShadowSafeTooltip title="See less often">
               <IconButton>
                 <ChevronsDown color="lightblue" size={20} />
               </IconButton>
-            </CustomTooltip>
+            </ShadowSafeTooltip>
           </div>
         </Fade>
       </Box>
@@ -339,9 +307,15 @@ const QuickCheckQuiz: React.FC<QuickCheckQuizProps> = ({
   }
 
   return (
-    <form action={action}>
+    <form action={action} style={{ display: 'flex', gap: 1 }}>
       <TextField
+        name="quickCheck"
+        variant="outlined"
+        fullWidth
+        placeholder="Your translation..."
+        autoFocus
         slotProps={{
+          // shrink the input
           input: {
             slotProps: {
               input: {
@@ -353,10 +327,6 @@ const QuickCheckQuiz: React.FC<QuickCheckQuizProps> = ({
             },
           },
         }}
-        name="quickCheck"
-        variant="outlined"
-        fullWidth
-        placeholder="Your translation..."
       />
     </form>
   )
@@ -368,9 +338,8 @@ interface AuthGuardProps {
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const user = useUser()
-  // const session = useSession()
-  // console.log('session', session)
-  // console.log('user', user)
+  const session = useSession()
+  console.log('Card AuthGuard', { session, user })
 
   if (!user) {
     return (

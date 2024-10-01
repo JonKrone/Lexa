@@ -3,6 +3,28 @@ import { Providers } from '../Providers'
 import { ShadowDOM } from '../ShadowDOM'
 import { LexaRoot, LexaRootProps } from './LexaRoot'
 
+interface LexaRootWrapper {
+  root: ReactDOM.Root
+  originalText: string
+  range: Range
+}
+
+let lexaRoots: LexaRootWrapper[] = []
+
+/**
+ * When we logout or pause the extension, we need to unmount the LexaRoots.
+ * Otherwise, we'll have a bunch of unmounted React trees that are still hanging around.
+ */
+export function unmountLexaRoots() {
+  for (const wrapper of lexaRoots) {
+    wrapper.root.unmount()
+    wrapper.range.deleteContents()
+    wrapper.range.insertNode(document.createTextNode(wrapper.originalText))
+  }
+
+  lexaRoots = []
+}
+
 export function mountLexaRoot(range: Range, translation: LexaRootProps): void {
   // Create a wrapper element
   const customElement = document.createElement('span')
@@ -20,7 +42,19 @@ export function mountLexaRoot(range: Range, translation: LexaRootProps): void {
   customElement.classList.add('lexa-test-wrapper')
 
   // Render the LexaRoot
-  ReactDOM.createRoot(customElement).render(
+  const root = ReactDOM.createRoot(customElement, {
+    // React typically logs errors that are caught by an error boundary. Because our Lexa instances
+    // are living within another website, we want to swallow any handled errors that happen to keep
+    // the console clean.
+    onCaughtError(error) {
+      if (__DEBUG__ && typeof window !== 'undefined') {
+        console.log('LexaListener caught error', error)
+      }
+    },
+  })
+  lexaRoots.push({ root, originalText: translation.original, range })
+
+  root.render(
     <ShadowDOM as="span">
       <Providers>
         <LexaRoot {...translation} />

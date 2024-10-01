@@ -40,7 +40,7 @@ function ErrorFallback({ error }: { error: Error }) {
       </svg>
       <h1 style={{ marginTop: '16px' }}>Oops! Something went wrong.</h1>
       <p style={{ marginBottom: '24px' }}>
-        We're sorry, but an error occurred while using Lexa.
+        We're sorry, an error occurred while using Lexa.
       </p>
       <div
         style={{

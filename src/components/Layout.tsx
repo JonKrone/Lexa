@@ -92,11 +92,16 @@ const AuthGuard: FC<{ children: React.ReactNode }> = ({ children }) => {
   const [location] = useLocation()
   const [isAuthPage] = useRoute(/^\/auth/)
   const isAuthenticated = useIsAuthenticated()
-  // console.log('info:', useUser(), useSession(), useSettings().data)
-  console.log('isAuthenticated', isAuthenticated)
+  console.log('Main App isAuthenticated', isAuthenticated)
 
   if (!isAuthenticated && !isAuthPage) {
-    return <Redirect to={`/auth/login?next=${encodeURIComponent(location)}`} />
+    let redirectUrl = '/auth/login'
+    if (location !== '/' && location !== '/index.html') {
+      const nextParam = encodeURIComponent(location)
+      redirectUrl = `/auth/login?next=${nextParam}`
+    }
+
+    return <Redirect to={redirectUrl} />
   }
 
   return children

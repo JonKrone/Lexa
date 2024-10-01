@@ -12,15 +12,18 @@ const authQueries = {
   user: () =>
     queryOptions({
       queryKey: ['auth', 'user'],
-      queryFn: () => fetchUser(),
+      queryFn: async () => {
+        const { data, error } = await fetchUser()
+        if (error) throw error
+        return data
+      },
     }),
   session: () =>
     queryOptions({
       queryKey: ['auth', 'session'],
       queryFn: async () => {
-        console.log('fetching session')
-        const data = await fetchSession()
-        console.log('session', data)
+        const { data, error } = await fetchSession()
+        if (error) throw error
         return data
       },
     }),
@@ -33,11 +36,11 @@ const fetchSession = () => supabase.auth.getSession()
 export const useUser = () => {
   // technically, user can be null here but we're handling that high up in the app and
   // guarantee it in authenticated pages.
-  return useSuspenseQuery(authQueries.user()).data.data.user as User
+  return useSuspenseQuery(authQueries.user()).data.user as User
 }
 
 export const useSession = () =>
-  useSuspenseQuery(authQueries.session()).data?.data.session ?? undefined
+  useSuspenseQuery(authQueries.session()).data.session ?? undefined
 
 export const useIsAuthenticated = () => useSession() !== undefined
 
@@ -53,15 +56,50 @@ export const useSignInWithOtp = () => {
       })
 
       if (error) throw error
+      return data
+    },
+    meta: {
+      invalidates: '*',
+    },
+  })
+}
 
-      // const data = {
-      //   email,
-      // } as any
+export const useVerifyOtp = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (tokenHash: string) => {
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: 'magiclink',
+      })
+
+      if (error) throw error
+
+      if (!data.user) {
+        throw new Error(
+          'No user found on successful OTP verification. Needs investigation.',
+        )
+      }
+
+      sendExtensionMessage({
+        type: 'OTP_VERIFIED',
+        payload: data,
+      })
+
+      // preload user and session data
+      queryClient.setQueryData(['auth', 'user'], {
+        data: data.user,
+        error: null,
+      })
+      queryClient.setQueryData(['auth', 'session'], {
+        data: data.session,
+        error: null,
+      })
 
       return data
     },
     meta: {
-      invalidates: [['auth']],
+      invalidates: '*',
     },
   })
 }
@@ -73,13 +111,21 @@ export const useSignOut = () => {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
 
-      sendExtensionMessage({
-        type: 'SIGN_OUT',
-        payload: undefined,
-      })
+      try {
+        sendExtensionMessage({
+          type: 'SIGN_OUT',
+          payload: undefined,
+        })
+      } catch (error) {
+        console.error('Error sending SIGN_OUT message', error)
+      }
 
       queryClient.clear()
-      queryClient.getQueryCache().clear()
+      await queryClient.invalidateQueries()
+      console.log('signing out')
+    },
+    meta: {
+      invalidates: '*',
     },
   })
 }

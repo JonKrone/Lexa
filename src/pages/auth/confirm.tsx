@@ -1,82 +1,11 @@
+import { useEffect, useMemo } from 'react'
+
+import { Alert, AlertTitle, Box, Button, Paper } from '@mui/material'
 import { AuthError } from '@supabase/supabase-js'
-import { useEffect, useState } from 'react'
-import { supabase } from '../../config/supabase'
-import { sendExtensionMessage } from '../../lib/extension'
-
-import { Alert, AlertTitle, Box, Paper } from '@mui/material'
 import { FC } from 'react'
+import { Link, Redirect } from 'wouter'
 import { Body2, H6 } from '../../components/Typography'
-
-export const Confirm: FC = () => {
-  const authParams = useAuthParams()
-  const [error, setError] = useState<AuthError | null>(null)
-
-  useEffect(() => {
-    if (!authParams.token_hash) return
-
-    const verifyOtp = async () => {
-      const result = await supabase.auth.verifyOtp({
-        token_hash: authParams.token_hash,
-        type: 'magiclink',
-      })
-
-      if (result.error) {
-        setError(result.error)
-        return
-      }
-
-      if (!result.data.user) {
-        throw new Error(
-          'No user found on successful OTP verification. Needs investigation.',
-        )
-      }
-
-      sendExtensionMessage({
-        type: 'SIGN_IN_WITH_OTP',
-        payload: result.data.user,
-      })
-    }
-
-    verifyOtp()
-  }, [authParams.token_hash])
-
-  if ('error' in authParams && authParams.error) {
-    return (
-      <Box sx={{ p: 2 }}>
-        <Alert severity="error">
-          <AlertTitle>Authentication Error</AlertTitle>
-          <Body2>Error: {authParams.error}</Body2>
-          <Body2>Error Code: {authParams.error_code}</Body2>
-          <Body2>Description: {authParams.error_description}</Body2>
-        </Alert>
-      </Box>
-    )
-  }
-
-  if (error) {
-    // TODO: Not a fan of this error display. Should standardize on something.
-    // dev-images/poor-auth-error.jpg)
-    return (
-      <Box sx={{ p: 2 }}>
-        <Alert severity="error">
-          <AlertTitle>Authentication Error</AlertTitle>
-          <Body2>Message: {error.message}</Body2>
-          {error.code && <Body2>Error Code: {error.code}</Body2>}
-          {error.status && <Body2>Status: {error.status}</Body2>}
-        </Alert>
-      </Box>
-    )
-  }
-
-  return (
-    <Box sx={{ p: 2 }}>
-      <Paper elevation={3} sx={{ p: 2 }}>
-        <H6 gutterBottom>Confirming Authentication</H6>
-        <Body2>Please wait while we verify your magic link...</Body2>
-      </Paper>
-    </Box>
-  )
-}
+import { useIsAuthenticated, useVerifyOtp } from '../../queries/auth'
 
 type AuthParams = {
   // PKCE magic link
@@ -96,11 +25,75 @@ type AuthParams = {
   error_description: string | null
 }
 
-const useAuthParams = () => {
-  const [authParams] = useState<AuthParams>(() => {
+export const Confirm: FC = () => {
+  const authParams = useMemo<AuthParams>(() => {
     const params = new URL(window.location.href).searchParams
     return Object.fromEntries(params) as AuthParams
-  })
+  }, [])
 
-  return authParams
+  const isAuthenticated = useIsAuthenticated()
+  const { mutateAsync: verifyOtp, isPending, error } = useVerifyOtp()
+
+  useEffect(() => {
+    if (!authParams.token_hash) return
+    if (isPending) return
+    if (error) return
+
+    verifyOtp(authParams.token_hash)
+  }, [authParams.token_hash, isPending, error])
+
+  if (isAuthenticated) {
+    const params = new URLSearchParams(window.location.search)
+    const nextParam = params.get('next')
+    const nextPath = nextParam ? decodeURIComponent(nextParam) : '/home'
+    return <Redirect to={nextPath} />
+  }
+
+  if (authParams.error) {
+    return (
+      <Box sx={{ p: 2 }}>
+        <Alert severity="error">
+          <AlertTitle>Authentication Error</AlertTitle>
+          <Body2>Error: {authParams.error}</Body2>
+          <Body2>Error Code: {authParams.error_code}</Body2>
+          <Body2>Description: {authParams.error_description}</Body2>
+        </Alert>
+      </Box>
+    )
+  }
+
+  if (error) {
+    const err = error as unknown as AuthError
+
+    // TODO: Not a fan of this error display. Should standardize on something.
+    // dev-images/poor-auth-error.jpg)
+    return (
+      <Box sx={{ p: 2 }}>
+        <Alert severity="error">
+          <AlertTitle>Authentication Error</AlertTitle>
+          <Body2>{err.message}</Body2>
+          {err.code && <Body2>Error Code: {err.code}</Body2>}
+          {err.status && <Body2>Status: {err.status}</Body2>}
+        </Alert>
+        <Button
+          LinkComponent={Link}
+          href="/auth/login"
+          variant="contained"
+          fullWidth
+          sx={{ mt: 4 }}
+        >
+          Login again
+        </Button>
+      </Box>
+    )
+  }
+
+  return (
+    <Box sx={{ p: 2 }}>
+      <Paper elevation={3} sx={{ p: 2 }}>
+        <H6 gutterBottom>Confirming Authentication</H6>
+        <Body2>Please wait while we verify your magic link...</Body2>
+      </Paper>
+    </Box>
+  )
 }

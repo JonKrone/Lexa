@@ -2,11 +2,17 @@ import './env'
 
 import { mountLexaListener } from './components/LexaListener'
 import { queryClient } from './config/react-query'
-import { onExtensionMessage } from './lib/extension'
+import { supabase } from './config/supabase'
+import {
+  onExtensionMessage,
+  SignInWithOtpMessage,
+  SignOutMessage,
+} from './lib/extension'
 import { isCurrentSiteIgnored } from './lib/storage'
 
 console.log('Content script loaded')
 
+let unmountLexaListener: null | (() => void) = null
 async function initializeLexaExtension() {
   const isIgnored = await isCurrentSiteIgnored()
 
@@ -26,7 +32,7 @@ async function initializeLexaExtension() {
     }
   }
 
-  mountLexaListener()
+  unmountLexaListener = mountLexaListener()
 }
 
 if (document.readyState === 'loading') {
@@ -42,16 +48,26 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
   }
 })
 
-onExtensionMessage('SIGN_IN_WITH_OTP', (data) => {
-  console.log('Received SIGN_IN_WITH_OTP', data)
-  queryClient.setQueryData(['auth', 'user'], data)
-  queryClient.invalidateQueries({ queryKey: ['auth'] })
-  queryClient.invalidateQueries({ queryKey: ['auth', 'user'] })
-  queryClient.invalidateQueries({ queryKey: ['auth', 'session'] })
+onExtensionMessage<SignInWithOtpMessage>('OTP_VERIFIED', async (data) => {
+  console.log('Content: Received OTP_VERIFIED', data)
+  const result = await supabase.auth.initialize()
+  if (result.error) {
+    console.error('Supabase initialization failed', result.error)
+    return
+  }
+
+  queryClient.setQueryData(['auth', 'user'], { user: data.user })
+  queryClient.setQueryData(['auth', 'session'], { session: data.session })
+
+  initializeLexaExtension()
 })
 
-onExtensionMessage('SIGN_OUT', () => {
+onExtensionMessage<SignOutMessage>('SIGN_OUT', () => {
   console.log('Received SIGN_OUT')
   queryClient.clear()
-  queryClient.getQueryCache().clear()
+  unmountLexaListener?.()
+  unmountLexaListener = null
+  // queryClient.refetchQueries({ queryKey: ['auth'] })
+  // queryClient.refetchQueries({ queryKey: ['auth', 'user'] })
+  // queryClient.refetchQueries({ queryKey: ['auth', 'session'] })
 })

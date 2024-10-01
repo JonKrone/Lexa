@@ -33,7 +33,7 @@ declare module '@tanstack/react-query' {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 60 * 1, // 1 hour
+      // staleTime: 1000 * 60 * 60 * 1, // 1 hour
       retry: false,
     },
   },
@@ -110,4 +110,7 @@ const [_unsubscribe, _initializationPromise] = persistQueryClient({
   }),
 })
 
-;(window as any).qc = queryClient
+// window is not available in the background script
+if (__DEBUG__ && typeof window !== 'undefined') {
+  ;(window as any).qc = queryClient
+}
