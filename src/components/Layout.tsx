@@ -61,11 +61,10 @@ export const Layout: FC<{ children: React.ReactNode }> = ({ children }) => {
                       borderColor: 'divider',
                     }}
                   >
-                    <NavAction label="Home" icon={<HomeIcon />} value="home" />
-                    <NavAction label="Learn" icon={<School />} value="learn" />
+                    <NavAction icon={<HomeIcon size={32} />} value="home" />
+                    <NavAction icon={<School size={32} />} value="learn" />
                     <NavAction
-                      label="Settings"
-                      icon={<SettingsIcon />}
+                      icon={<SettingsIcon size={32} />}
                       value="settings"
                     />
                   </BottomNavigation>

@@ -1,4 +1,3 @@
-import { User } from '@supabase/supabase-js'
 import {
   queryOptions,
   useMutation,
@@ -33,10 +32,11 @@ const fetchUser = () => supabase.auth.getUser()
 
 const fetchSession = () => supabase.auth.getSession()
 
+/** Should only be used where we've guaranteed the user is authenticated, i.e. by a guarded route */
 export const useUser = () => {
-  // technically, user can be null here but we're handling that high up in the app and
-  // guarantee it in authenticated pages.
-  return useSuspenseQuery(authQueries.user()).data.user as User
+  const { data } = useSuspenseQuery(authQueries.user())
+  if (!data.user) throw new Error('User not authenticated')
+  return data.user
 }
 
 export const useSession = () =>

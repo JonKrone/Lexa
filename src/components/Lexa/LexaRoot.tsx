@@ -1,6 +1,7 @@
 import { Box, useTheme } from '@mui/material'
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 import { usePrefetchTranslationDetails } from '../../queries/translation-details'
+import { useRecordPhraseSeen } from '../../queries/user-phrase'
 import { HoverCard } from '../HoverCard'
 import { LexaCardContent } from './LexaCardContent'
 
@@ -16,16 +17,33 @@ export const LexaRoot: React.FC<LexaRootProps> = ({
   context,
 }) => {
   const theme = useTheme()
+  const hasRegisteredPhrase = useRef(false)
+  const recordPhraseSeen = useRecordPhraseSeen()
   const prefetchTanslationDetails = usePrefetchTranslationDetails(
     original,
     translation,
     context,
   )
 
+  // Mark that we've seen this phrase again. Will create or update the phrase in the database.
+  useEffect(() => {
+    if (hasRegisteredPhrase.current) return
+    console.log('updating user phrase')
+
+    recordPhraseSeen.mutate(original)
+    hasRegisteredPhrase.current = true
+  }, [recordPhraseSeen])
+
   return (
     <HoverCard
       onHover={prefetchTanslationDetails}
-      content={<LexaCardContent {...{ translation, original, context }} />}
+      content={
+        <LexaCardContent
+          translation={translation}
+          original={original}
+          context={context}
+        />
+      }
     >
       <Box
         component="span"

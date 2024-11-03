@@ -9,6 +9,7 @@ interface LexaRootWrapper {
   range: Range
 }
 
+// Keep track of all LexaRoots so we can unmount them when we logout or pause the extension.
 let lexaRoots: LexaRootWrapper[] = []
 
 /**
@@ -44,11 +45,11 @@ export function mountLexaRoot(range: Range, translation: LexaRootProps): void {
   // Render the LexaRoot
   const root = ReactDOM.createRoot(customElement, {
     // React typically logs errors that are caught by an error boundary. Because our Lexa instances
-    // are living within another website, we want to swallow any handled errors that happen to keep
-    // the console clean.
+    // are living within another website, we want to swallow any handled errors in order to keep the
+    // console clean.
     onCaughtError(error) {
       if (__DEBUG__ && typeof window !== 'undefined') {
-        console.log('LexaListener caught error', error)
+        console.log('Lexa: LexaListener caught error', error)
       }
     },
   })

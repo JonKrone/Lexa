@@ -11,7 +11,7 @@ export const mountLexaListener = () => {
   customElement.id = 'lexa-settings-listener'
   document.body.appendChild(customElement)
 
-  const reactDomRoot = ReactDOM.createRoot(customElement, {
+  const root = ReactDOM.createRoot(customElement, {
     // React typically logs errors that are caught by an error boundary. Because our Lexa instances
     // are living within another website, we want to swallow any handled errors that happen to keep
     // the console clean.
@@ -22,7 +22,7 @@ export const mountLexaListener = () => {
     },
   })
 
-  reactDomRoot.render(
+  root.render(
     <WholeAppErrorBoundary>
       <Providers>
         <Suspense fallback={<div>Loading...</div>}>
@@ -34,7 +34,7 @@ export const mountLexaListener = () => {
 
   return () => {
     console.log('Unmounting LexaListener')
-    reactDomRoot.unmount()
+    root.unmount()
     unmountLexaRoots()
   }
 }

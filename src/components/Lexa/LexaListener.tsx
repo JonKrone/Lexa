@@ -6,13 +6,16 @@ import {
 import { htmlToMarkdown } from '../../lib/htmlToMarkdown'
 import { replaceTextSegments } from '../../lib/replaceTextSegments'
 import { useSettings } from '../../queries/settings'
+import { useUserPhrases } from '../../queries/user-phrase'
 
 /**
- * This component is the entry point for the Lexa extension. It waits for auth and settings to load,
- * then starts the translation process.
+ * The entry point for the Lexa extension. It waits for auth and settings to load, then starts the
+ * translation process.
  */
 export const LexaListener: FC = () => {
   const { data: settings } = useSettings()
+  const { data: userPhrases = [] } = useUserPhrases()
+  console.log('userPhrases', userPhrases)
 
   useEffect(() => {
     if (!settings) {

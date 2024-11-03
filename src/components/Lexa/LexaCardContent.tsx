@@ -22,11 +22,15 @@ import {
   Star,
   X,
 } from 'lucide-react'
-import React, { useActionState, useState } from 'react'
+import React, { FC, memo, useActionState, useState } from 'react'
 import { ITranslationDetails } from '../../ai/generateTranslationDetails'
-import { useSession, useUser } from '../../queries/auth'
+import { useUser } from '../../queries/auth'
 import { useTranslationDetails } from '../../queries/translation-details'
 
+import {
+  useCreateOrUpdateUserPhrase,
+  useUserPhrase,
+} from '../../queries/user-phrase'
 import { LoginForm } from '../LoginForm'
 import { ShadowSafeTooltip } from '../ShadowSafeTooltip'
 import { H6, Subtitle1 } from '../Typography'
@@ -54,178 +58,169 @@ interface LexaCardContentProps {
  *
  * TODO: Gracefully handle if there's no internet -- use chrome.ai(<joke about not being connected>)
  */
-export function LexaCardContent({
-  translation,
-  original,
-  context,
-  // wordGender,
-  // masteryLevel,
-  // isFavorited,
-  // onFavoriteToggle,
-}: LexaCardContentProps) {
-  const [tabValue, setTabValue] = useState<TabValue>('details')
-  const [notes, setNotes] = useState('')
-  const [thumbsUp, setThumbsUp] = useState(false)
-  const [thumbsDown, setThumbsDown] = useState(false)
+export const LexaCardContent: FC<LexaCardContentProps> = memo(
+  ({ translation, original, context }: LexaCardContentProps) => {
+    const updateUserPhrase = useCreateOrUpdateUserPhrase()
+    const { mastery_level: masteryLevel, starred } =
+      useUserPhrase(original) || {}
+    const [tabValue, setTabValue] = useState<TabValue>('details')
 
-  const {
-    data: translationDetails = {} as GenerateObjectResult<ITranslationDetails>,
-  } = useTranslationDetails(original, translation, context)
+    const [notes, setNotes] = useState('')
 
-  const masteryLevel = 'Learning'
-  const isFavorited = false
-  const onFavoriteToggle = () => {}
-  const details = translationDetails.object
+    const {
+      data: translationDetails = {} as GenerateObjectResult<ITranslationDetails>,
+    } = useTranslationDetails(original, translation, context)
 
-  const handleThumbsUp = () => {
-    setThumbsUp((prev) => !prev)
-    if (thumbsDown) setThumbsDown(false)
-  }
+    const details = translationDetails.object
 
-  const handleThumbsDown = () => {
-    setThumbsDown((prev) => !prev)
-    if (thumbsUp) setThumbsUp(false)
-  }
+    const handleStarToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation()
+      updateUserPhrase.mutate({
+        phrase_text: original,
+        starred: !starred,
+      })
+    }
 
-  return (
-    <Card
-      sx={{
-        width: 300,
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-      }}
-    >
-      <AuthGuard>
-        <CardHeader
-          sx={{
-            pb: 0,
-          }}
-          title={
-            <>
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr auto',
-                  alignItems: 'flex-start',
-                  gap: 2,
-                }}
-              >
-                <Box>
-                  <Typography variant="h6">{translation}</Typography>
-                </Box>
+    return (
+      <Card
+        sx={{
+          width: 300,
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+        }}
+      >
+        <AuthGuard>
+          <CardHeader
+            sx={{
+              pb: 0,
+            }}
+            title={
+              <>
                 <Box
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(3, auto)',
-                    gap: 0.5,
+                    gridTemplateColumns: '1fr auto',
+                    alignItems: 'flex-start',
+                    gap: 2,
                   }}
                 >
-                  <ShadowSafeTooltip title="Favorite">
-                    <IconButton
-                      onClick={onFavoriteToggle}
-                      aria-label="favorite"
-                    >
-                      <Star fill={isFavorited ? 'gold' : 'gray'} size={20} />
-                    </IconButton>
-                  </ShadowSafeTooltip>
+                  <Box>
+                    <Typography variant="h6">{translation}</Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, auto)',
+                      gap: 0.5,
+                    }}
+                  >
+                    <ShadowSafeTooltip title="Favorite">
+                      <IconButton
+                        onClick={handleStarToggle}
+                        aria-label="favorite"
+                      >
+                        <Star fill={starred ? 'gold' : 'gray'} size={20} />
+                      </IconButton>
+                    </ShadowSafeTooltip>
+                  </Box>
                 </Box>
-              </Box>
-              <QuickCheckQuiz
-                original={original}
-                wordGender={details?.wordGender}
-              />
-            </>
-          }
-        />
-        <CardContent sx={{ pt: 0, pb: 0, flexGrow: 1 }}>
-          <Tabs
-            value={tabValue}
-            onChange={(_, val) => setTabValue(val)}
-            variant="fullWidth"
-            indicatorColor="primary"
-            textColor="primary"
-          >
-            <Tab label="Details" value="details" />
-            <Tab label="Notes" value="notes" />
-            <Tab label="Quiz" value="quiz" />
-          </Tabs>
-          <Box sx={{ marginTop: 2, overflowY: 'auto', height: 250 }}>
-            {tabValue === 'details' && (
-              <Box>
-                <Typography variant="body2">
-                  Mastery Level: {masteryLevel}
-                </Typography>
-                <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                  Contextual Examples
-                </Typography>
-                <Typography variant="body2">
-                  {details?.formalUsage}
-                  <br />
-                  {details?.informalUsage}
-                </Typography>
-                <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                  Other Ways to Say
-                </Typography>
-                <Typography variant="body2">
-                  {details?.otherWaysToSay.map(
-                    ({ translation, explanation }) => (
-                      <React.Fragment key={translation}>
-                        {translation} - {explanation}
-                        <br />
-                      </React.Fragment>
-                    ),
-                  )}
-                  <br />
-                  Antonyms: {details?.antonyms.join(', ')}
-                </Typography>
-                <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                  Cultural Insights
-                </Typography>
-                <Typography variant="body2">
-                  {details?.culturalInsights}
-                </Typography>
-              </Box>
-            )}
-            {tabValue === 'notes' && (
-              <Box>
-                <Typography variant="subtitle1">Your Notes</Typography>
-                <TextField
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  minRows={6}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add your personal notes here..."
+                <QuickCheckQuiz
+                  original={original}
+                  wordGender={details?.wordGender}
                 />
-              </Box>
-            )}
-            {tabValue === 'quiz' && (
-              <Box>
-                <Typography variant="subtitle1">Quick Quiz</Typography>
-                <Typography variant="body2">
-                  Quizzes are coming soon!
-                </Typography>
-                <Button variant="contained" sx={{ marginTop: 2 }}>
-                  Start Quiz
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </CardContent>
-        <CardActions sx={{ justifyContent: 'flex-end', padding: '8px 16px' }}>
-          <IconButton aria-label="feedback">
-            <MessageSquareQuote />
-          </IconButton>
-          <IconButton aria-label="settings">
-            <Settings />
-          </IconButton>
-        </CardActions>
-      </AuthGuard>
-    </Card>
-  )
-}
+              </>
+            }
+          />
+          <CardContent sx={{ pt: 0, pb: 0, flexGrow: 1 }}>
+            <Tabs
+              value={tabValue}
+              onChange={(_, val) => setTabValue(val)}
+              variant="fullWidth"
+              indicatorColor="primary"
+              textColor="primary"
+            >
+              <Tab label="Details" value="details" />
+              <Tab label="Notes" value="notes" />
+              <Tab label="Quiz" value="quiz" />
+            </Tabs>
+            <Box sx={{ marginTop: 2, overflowY: 'auto', height: 250 }}>
+              {tabValue === 'details' && (
+                <Box>
+                  <Typography variant="body2">
+                    Mastery Level: {masteryLevel}
+                  </Typography>
+                  <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                    Contextual Examples
+                  </Typography>
+                  <Typography variant="body2">
+                    {details?.formalUsage}
+                    <br />
+                    {details?.informalUsage}
+                  </Typography>
+                  <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                    Other Ways to Say
+                  </Typography>
+                  <Typography variant="body2">
+                    {details?.otherWaysToSay.map(
+                      ({ translation, explanation }) => (
+                        <React.Fragment key={translation}>
+                          {translation} - {explanation}
+                          <br />
+                        </React.Fragment>
+                      ),
+                    )}
+                    <br />
+                    Antonyms: {details?.antonyms.join(', ')}
+                  </Typography>
+                  <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
+                    Cultural Insights
+                  </Typography>
+                  <Typography variant="body2">
+                    {details?.culturalInsights}
+                  </Typography>
+                </Box>
+              )}
+              {tabValue === 'notes' && (
+                <Box>
+                  <Typography variant="subtitle1">Your Notes</Typography>
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    minRows={6}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add your personal notes here..."
+                  />
+                </Box>
+              )}
+              {tabValue === 'quiz' && (
+                <Box>
+                  <Typography variant="subtitle1">Quick Quiz</Typography>
+                  <Typography variant="body2">
+                    Quizzes are coming soon!
+                  </Typography>
+                  <Button variant="contained" sx={{ marginTop: 2 }}>
+                    Start Quiz
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          </CardContent>
+          <CardActions sx={{ justifyContent: 'flex-end', padding: '8px 16px' }}>
+            <IconButton aria-label="feedback">
+              <MessageSquareQuote />
+            </IconButton>
+            <IconButton aria-label="settings">
+              <Settings />
+            </IconButton>
+          </CardActions>
+        </AuthGuard>
+      </Card>
+    )
+  },
+)
 
 interface QuickCheckQuizProps {
   original: string
@@ -338,8 +333,6 @@ interface AuthGuardProps {
 
 const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
   const user = useUser()
-  const session = useSession()
-  console.log('Card AuthGuard', { session, user })
 
   if (!user) {
     return (
