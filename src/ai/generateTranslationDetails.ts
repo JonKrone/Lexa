@@ -2,115 +2,33 @@ import { generateObject } from 'ai'
 import { z } from 'zod'
 import { Models } from './models'
 
-//   "word": {
-//     "type": "string",
-//     "description": "The word or phrase in question."
-//   },
-//   "translation": {
-//     "type": "string",
-//     "description": "The translation of the word or phrase into the target language."
-//   },
-//   "word_gender": {
-//     "type": "string",
-//     "description": "The grammatical gender of the word (e.g., masculine, feminine, neuter). Applicable only if the word is a noun and the language has grammatical gender."
-//   },
-//   "formal_usage": {
-//     "type": "string",
-//     "description": "Explanation of how the word or phrase is used in formal contexts."
-//   },
-//   "informal_usage": {
-//     "type": "string",
-//     "description": "Explanation of how the word or phrase is used in informal contexts."
-//   },
-//   "regional_variations": {
-//     "type": "string",
-//     "description": "Any regional differences in the usage or translation of the word or phrase."
-//   },
-//   "other_ways_to_say": {
-//     "type": "array",
-//     "items": {
-//       "type": "string"
-//     },
-//     "description": "Alternative expressions or phrases that convey the same meaning. Include synonyms and other ways to say the same thing."
-//   },
-//   "synonyms": {
-//     "type": "array",
-//     "items": {
-//       "type": "string"
-//     },
-//     "description": "A list of synonyms for the word or phrase. Applicable if the word is a single word or if synonyms make sense in context."
-//   },
-//   "antonyms": {
-//     "type": "array",
-//     "items": {
-//       "type": "string"
-//     },
-//     "description": "A list of antonyms for the word or phrase. Applicable if the word is a single word or if antonyms make sense in context."
-//   },
-//   "cultural_insights": {
-//     "type": "string",
-//     "description": "Idiomatic uses, expressions, or interesting cultural nuances or traditions related to the word or phrase."
-//   }
-// },
-// "required": ["word", "translation"],
 const TranslationDetailsSchema = z.object({
   wordGender: z
-    .string()
+    .enum(['masc', 'fem', 'neuter', 'masc/fem', 'N/A'])
     .describe(
-      'The grammatical gender of the word (e.g., masculine, feminine, neuter). Applicable only if the word is a noun and the language has grammatical gender.',
-    ),
-  formalUsage: z
-    .string()
-    .describe(
-      'Explanation of how the word or phrase is used in formal contexts.',
-    ),
-  informalUsage: z
-    .string()
-    .describe(
-      'Explanation of how the word or phrase is used in informal contexts.',
+      "Identify the grammatical gender (if applicable), considering the target language and whether the word is a noun. If the word has multiple genders or forms, mention them. If gender doesn't apply, write N/A.",
     ),
   regionalVariations: z
     .string()
-    .describe(
-      'Any regional differences in the usage or translation of the word or phrase.',
-    ),
+    .describe('Provide any regional differences, or write N/A.'),
   otherWaysToSay: z
     .array(
       z.object({
-        translation: z
-          .string()
-          .describe(
-            'The translation of the word or phrase in the target language.',
-          ),
-        explanation: z
-          .string()
-          .describe(
-            'The explanation of the word or phrase in the source language.',
-          ),
+        translation: z.string(),
+        explanation: z.string(),
       }),
     )
     .describe(
-      'Alternative expressions or phrases that convey the same meaning. Include synonyms and other ways to say the same thing.',
+      'Give brief alternative translations or simple phrases in easily understood terms, reflecting natural yet varied usage.',
     ),
   antonyms: z
-    .array(
-      z
-        .string()
-        .describe('An antonym for the word or phrase in the target language.'),
-    )
-    .describe(
-      'A list of antonyms for the word or phrase. Applicable if the word is a single word or if antonyms make sense in context.',
-    ),
+    .array(z.string())
+    .describe('Provide one or more antonyms, if applicable, or write N/A.'),
   culturalInsights: z
     .string()
     .describe(
-      'Idiomatic uses, expressions, or interesting cultural nuances or traditions related to the word or phrase.',
+      'Provide very brief cultural background or nuances relevant to the phrase.',
     ),
-  notes: z.string().describe('Any relevant linguistic or cultural notes.'),
-  // usageInIdiomsOrExpressions: z
-  //   .string()
-  //   .nullable()
-  //   .describe('Usage in idioms or expressions.'),
 })
 
 export type ITranslationDetails = z.infer<typeof TranslationDetailsSchema>
@@ -143,22 +61,71 @@ interface TranslationDetailsInputs {
   dialectOrRegion?: string
 }
 
-export function makeTranslationDetailsPrompt(
-  inputs: TranslationDetailsInputs,
-): string {
-  return `
-You are an AI language model that provides concise, engaging linguistic and cultural information to help users learn a new language.
+export function makeTranslationDetailsPrompt(inputs: TranslationDetailsInputs) {
+  return `Generate useful metadata about a translated word or phrase to create an enriched, engaging language learning experience. This is especially aimed at novice learners who need exposure to alternative expressions and colloquialisms.
 
-**Instructions:**
+**Inputs:**
+- \`sourceLanguage\`: The source language of the original word or phrase.
+- \`targetLanguage\`: The language into which the word or phrase has been translated.
+- \`word\`: The word or phrase in the source language.
+- \`translation\`: The translation of the word or phrase in the target language.
+- \`pageTitle\`: The title of the webpage where the word or phrase appears.
+- \`url\`: The URL of the webpage where the word or phrase appears.
+- \`surroundingContext\`: The immediate context (e.g., sentence or passage) in which the word or phrase is used.
 
-- Use the provided information to generate content for each field in the JSON schema below.
-- Provide synonyms, antonyms, and alternative expressions in the **target language** ("${inputs.targetLanguage || 'target language'}") to enhance learning.
-- Keep cultural insights and regional variations brief and relevant.
-- Tailor your language to be engaging and suitable for someone learning "${inputs.targetLanguage || 'the target language'}".
-- Use context and webpage information to clarify meanings if necessary.
-- Exclude any explanations or additional text outside of the JSON output.
+**Your Task:**
+Produce metadata covering various aspects related to the translation.
 
-**Input Information:**
+### **Instructions:**
+
+1. **Identify the grammatical gender** (if applicable), considering the target language and whether the word is a noun. If the word has multiple genders or forms, mention them. If gender doesn't apply, write \`N/A\` for \`wordGender\`.
+
+2. **Mention any regional variations** of the translated term, especially if it has different equivalents in specific versions of the target language (e.g., European vs. Latin American Spanish). If there are no regional variations, write \`N/A\` for \`regionalVariations\`.
+
+3. **Provide alternative ways to say** the word or phrase in simple terms or as used by native speakers. Include colloquial or commonly used variations to help the learner communicate effectively.
+
+4. **Suggest any relevant antonyms** that may enrich the learner's understanding and vocabulary. If there are no direct antonyms, write \`N/A\` for \`antonyms\`.
+
+5. **Share cultural insights** (briefly) that could help the learner understand a local custom or nuance related to the word or phrase.
+
+**Output Format:**
+Provide your response in the following structure, keeping each item to one sentence or less:
+
+- \`wordGender\`: [State whether it is masculine, feminine, neuter, both (if applicable), or N/A.]
+- \`regionalVariations\`: [Provide any regional differences, or write N/A.]
+- \`otherWaysToSay\`: [Give brief alternative translations or simple phrases in easily understood terms, reflecting natural yet varied usage.]
+- \`antonyms\`: [Provide one or more antonyms, if applicable, or write N/A.]
+- \`culturalInsights\`: [Provide very brief cultural background or nuances relevant to the phrase.]
+
+**Important:**
+- **Keep your language engaging and simple** to help learners become familiar with colloquial variations without feeling overwhelmed.
+- The tone should be informative but easygoing, encouraging familiarity with variations in natural usage.
+- **Each bullet point should be no more than 20 words.**
+
+### **Example:**
+
+#### Input:
+- \`sourceLanguage\`: "English"
+- \`targetLanguage\`: "Spanish"
+- \`word\`: "cake"
+- \`translation\`: "pastel"
+- \`pageTitle\`: "Top 10 desserts you can make at home"
+- \`url\`: "https://example.com/top-10-desserts"
+- \`surroundingContext\`: "Here is a simple recipe for making a birthday cake."
+
+#### Output:
+- \`wordGender\`: Masculine
+- \`regionalVariations\`: In Spain, "tarta" is common; in Mexico, "pastel" is used.
+- \`otherWaysToSay\`: "tarta" (Spain), "bizcocho" (some regions), "queque" (Central America)
+- \`antonyms\`: "pan salado" (savory bread)
+- \`culturalInsights\`: "Tarta" can refer to an elaborate dessert in some countries.
+
+**Troubleshooting:**
+- If any field does not apply, write \`N/A\` for that field.
+- Ensure the response follows the structure and stays within the length guidelines.
+- Focus on providing helpful, learner-friendly information.
+
+### **Input Information:**
 
 - **Word or Phrase**: "${inputs.word}"
 - **Translation**: "${inputs.translation}"

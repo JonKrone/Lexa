@@ -5,35 +5,33 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  Fade,
   IconButton,
-  Tab,
-  Tabs,
   TextField,
   Typography,
+  useTheme,
 } from '@mui/material'
 import { GenerateObjectResult } from 'ai'
 import {
-  Check,
-  ChevronsDown,
-  ChevronsUp,
+  LucideBookOpen,
+  LucideClipboardPenLine,
+  LucideNotebook,
   MessageSquareQuote,
   Settings,
   Star,
-  X,
 } from 'lucide-react'
-import React, { FC, memo, useActionState, useState } from 'react'
+import { FC, memo, useState } from 'react'
 import { ITranslationDetails } from '../../ai/generateTranslationDetails'
-import { useUser } from '../../queries/auth'
 import { useTranslationDetails } from '../../queries/translation-details'
-
 import {
   useCreateOrUpdateUserPhrase,
   useUserPhrase,
 } from '../../queries/user-phrase'
-import { LoginForm } from '../LoginForm'
 import { ShadowSafeTooltip } from '../ShadowSafeTooltip'
-import { H6, Subtitle1 } from '../Typography'
+import { Body2, Subtitle1 } from '../Typography'
+import { LexaCardAuthGuard } from './LexaCardAuthGuard'
+import { QuickCheckQuiz } from './QuickCheckQuiz'
+
+const borderStyle = '1.5px solid rgba(255,255,255,0.1)'
 
 type TabValue = 'details' | 'notes' | 'quiz'
 
@@ -43,28 +41,14 @@ interface LexaCardContentProps {
   context: string
 }
 
-/**
- * TODO: Before rendering the rest of the content, ask the user to write what they think the translation is
- * TODO: If not logged in, show the sign up/in button
- *
- * TODO: Allow users to add their own notes to the translation
- * TODO: Mastery Levels: New, Learning, Mastered based on..? Quiz progress; # of times seen; # of
- * times marked known
- * TODO: Translation toggle: Show/hide original word
- * TODO: Engagement metrics like words learned; streaks; or daily goals
- * TODO: Daily/Weekly challenges: quizzes on words learned or seen daily/weekly
- * TODO: Report issues: incorrect translation, suggest improvements, etc
- * TODO: Settings shortcut (new ideas: reminders for daily/weekly quizzes)
- *
- * TODO: Gracefully handle if there's no internet -- use chrome.ai(<joke about not being connected>)
- */
 export const LexaCardContent: FC<LexaCardContentProps> = memo(
-  ({ translation, original, context }: LexaCardContentProps) => {
+  ({ translation, original, context }) => {
+    const theme = useTheme()
+
     const updateUserPhrase = useCreateOrUpdateUserPhrase()
     const { mastery_level: masteryLevel, starred } =
       useUserPhrase(original) || {}
     const [tabValue, setTabValue] = useState<TabValue>('details')
-
     const [notes, setNotes] = useState('')
 
     const {
@@ -81,6 +65,10 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
       })
     }
 
+    const handleTabChange = (tab: TabValue) => () => {
+      setTabValue(tab)
+    }
+
     return (
       <Card
         sx={{
@@ -90,10 +78,12 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
           height: '100%',
         }}
       >
-        <AuthGuard>
+        <LexaCardAuthGuard>
           <CardHeader
             sx={{
-              pb: 0,
+              pb: 1,
+              pt: 2,
+              borderBottom: borderStyle,
             }}
             title={
               <>
@@ -132,218 +122,162 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
               </>
             }
           />
-          <CardContent sx={{ pt: 0, pb: 0, flexGrow: 1 }}>
-            <Tabs
-              value={tabValue}
-              onChange={(_, val) => setTabValue(val)}
-              variant="fullWidth"
-              indicatorColor="primary"
-              textColor="primary"
-            >
-              <Tab label="Details" value="details" />
-              <Tab label="Notes" value="notes" />
-              <Tab label="Quiz" value="quiz" />
-            </Tabs>
-            <Box sx={{ marginTop: 2, overflowY: 'auto', height: 250 }}>
-              {tabValue === 'details' && (
-                <Box>
-                  <Typography variant="body2">
-                    Mastery Level: {masteryLevel}
-                  </Typography>
-                  <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                    Contextual Examples
-                  </Typography>
-                  <Typography variant="body2">
-                    {details?.formalUsage}
-                    <br />
-                    {details?.informalUsage}
-                  </Typography>
-                  <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                    Other Ways to Say
-                  </Typography>
-                  <Typography variant="body2">
-                    {details?.otherWaysToSay.map(
-                      ({ translation, explanation }) => (
-                        <React.Fragment key={translation}>
-                          {translation} - {explanation}
-                          <br />
-                        </React.Fragment>
-                      ),
-                    )}
-                    <br />
-                    Antonyms: {details?.antonyms.join(', ')}
-                  </Typography>
-                  <Typography variant="subtitle1" sx={{ marginTop: 1 }}>
-                    Cultural Insights
-                  </Typography>
-                  <Typography variant="body2">
-                    {details?.culturalInsights}
-                  </Typography>
+          <CardContent
+            sx={{
+              p: 4,
+              py: 2,
+              height: 300,
+              overflowY: 'auto',
+              flexGrow: 1,
+            }}
+          >
+            {tabValue === 'details' && (
+              <Box>
+                {/* <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    p: 1,
+                    bgcolor: 'rgba(255,255,255,0.05)',
+                    borderRadius: 1,
+                    mb: 2,
+                  }}
+                >
+                  <Body2 color="text.secondary">Mastery Level:</Body2>
+                  <Typography variant="body2">{masteryLevel}</Typography>
+                </Box> */}
+
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    mb: 1,
+                    pb: 0.5,
+                    borderBottom: borderStyle,
+                    fontWeight: 500,
+                  }}
+                >
+                  Other Ways to Say
+                </Typography>
+                <Box mb={2}>
+                  {details?.otherWaysToSay.map(
+                    ({ translation, explanation }) => (
+                      <Box
+                        key={translation}
+                        display="flex"
+                        flexDirection="column"
+                        gap={0.5}
+                        mb={1}
+                      >
+                        <Body2 color="secondary.main">{translation}</Body2>
+                        <Body2 pl={2} color="text.secondary">
+                          {explanation}
+                        </Body2>
+                      </Box>
+                    ),
+                  )}
                 </Box>
-              )}
-              {tabValue === 'notes' && (
-                <Box>
-                  <Typography variant="subtitle1">Your Notes</Typography>
-                  <TextField
-                    variant="outlined"
-                    fullWidth
-                    multiline
-                    minRows={6}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add your personal notes here..."
-                  />
-                </Box>
-              )}
-              {tabValue === 'quiz' && (
-                <Box>
-                  <Typography variant="subtitle1">Quick Quiz</Typography>
-                  <Typography variant="body2">
-                    Quizzes are coming soon!
-                  </Typography>
-                  <Button variant="contained" sx={{ marginTop: 2 }}>
-                    Start Quiz
-                  </Button>
-                </Box>
-              )}
-            </Box>
+
+                {/* <Box mb={2}>
+                  <Body2 color="secondary.main" fontWeight={500}>
+                    Antonyms
+                  </Body2>
+                  <Body2>{details?.antonyms.join(', ')}</Body2>
+                </Box> */}
+
+                <Subtitle1 mb={1} pb={0.5} borderBottom={borderStyle}>
+                  Cultural Insights
+                </Subtitle1>
+                <Body2 color="text.secondary" lineHeight={1.6}>
+                  {details?.culturalInsights}
+                </Body2>
+              </Box>
+            )}
+
+            {tabValue === 'notes' && (
+              <Box>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    mb: 2,
+                    pb: 0.5,
+                    borderBottom: borderStyle,
+                    fontWeight: 500,
+                  }}
+                >
+                  Your Notes
+                </Typography>
+                <TextField
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  minRows={6}
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Add your personal notes here..."
+                />
+              </Box>
+            )}
+            {tabValue === 'quiz' && (
+              <Box>
+                <Typography variant="subtitle1">Quick Quiz</Typography>
+                <Typography variant="body2">
+                  Quizzes are coming soon!
+                </Typography>
+                <Button variant="contained" sx={{ marginTop: 2 }}>
+                  Start Quiz
+                </Button>
+              </Box>
+            )}
           </CardContent>
-          <CardActions sx={{ justifyContent: 'flex-end', padding: '8px 16px' }}>
-            <IconButton aria-label="feedback">
-              <MessageSquareQuote />
-            </IconButton>
-            <IconButton aria-label="settings">
-              <Settings />
-            </IconButton>
+          <CardActions
+            sx={{
+              justifyContent: 'space-between',
+              padding: '4px 16px',
+              borderTop: borderStyle,
+              '.MuiIconButton-root': {
+                borderRadius: '25%',
+                cursor: 'pointer',
+              },
+            }}
+          >
+            <ShadowSafeTooltip title="Details" enterDelay={500}>
+              <IconButton
+                onClick={handleTabChange('details')}
+                color={tabValue === 'details' ? 'secondary' : 'default'}
+              >
+                <LucideBookOpen />
+              </IconButton>
+            </ShadowSafeTooltip>
+            <ShadowSafeTooltip title="Notes" enterDelay={500}>
+              <IconButton
+                onClick={handleTabChange('notes')}
+                color={tabValue === 'notes' ? 'secondary' : 'default'}
+              >
+                <LucideNotebook />
+              </IconButton>
+            </ShadowSafeTooltip>
+            <ShadowSafeTooltip title="Quiz" enterDelay={500}>
+              <IconButton
+                onClick={handleTabChange('quiz')}
+                color={tabValue === 'quiz' ? 'secondary' : 'default'}
+              >
+                <LucideClipboardPenLine />
+              </IconButton>
+            </ShadowSafeTooltip>
+            <ShadowSafeTooltip title="Feedback" enterDelay={500}>
+              <IconButton aria-label="feedback">
+                <MessageSquareQuote />
+              </IconButton>
+            </ShadowSafeTooltip>
+            <ShadowSafeTooltip title="Settings" enterDelay={500}>
+              <IconButton aria-label="settings">
+                <Settings />
+              </IconButton>
+            </ShadowSafeTooltip>
           </CardActions>
-        </AuthGuard>
+        </LexaCardAuthGuard>
       </Card>
     )
   },
 )
-
-interface QuickCheckQuizProps {
-  original: string
-  wordGender: string
-  afterSubmit?: (success: boolean) => void
-}
-
-const normalizeString = (
-  str: string,
-  removeDiacritics: boolean = true,
-): string => {
-  let normalizedStr = str
-    .replace(/\s+/g, ' ') // remove extra spaces
-    .trim()
-    .toLowerCase()
-
-  if (removeDiacritics) {
-    normalizedStr = normalizedStr
-      .normalize('NFD') // break up accented characters into their base characters and diacritics
-      .replace(/[\u0300-\u036f]/g, '') // remove the diacritics
-  }
-
-  return normalizedStr
-}
-
-const areStringsMatching = (a: string, b: string): boolean =>
-  normalizeString(a) === normalizeString(b)
-
-const QuickCheckQuiz: React.FC<QuickCheckQuizProps> = ({
-  original,
-  afterSubmit,
-  wordGender,
-}) => {
-  // const { mutate: createWordInteraction } = useCreateWordInteraction()
-
-  const [result, action] = useActionState((prev: any, formData: FormData) => {
-    const userAttempt = formData.get('quickCheck') as string
-    const success = areStringsMatching(userAttempt, original)
-
-    afterSubmit?.(success)
-    return { success }
-  }, null)
-
-  if (result) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 1,
-        }}
-      >
-        <Subtitle1 color="textSecondary">
-          {original}
-          {wordGender && ` (${wordGender})`}
-        </Subtitle1>
-        <Fade in>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {result.success ? (
-              <Check color="green" size={20} />
-            ) : (
-              <X color="red" size={20} />
-            )}
-            <ShadowSafeTooltip title="See more often">
-              <IconButton>
-                <ChevronsUp color="orange" size={20} />
-              </IconButton>
-            </ShadowSafeTooltip>
-            <ShadowSafeTooltip title="See less often">
-              <IconButton>
-                <ChevronsDown color="lightblue" size={20} />
-              </IconButton>
-            </ShadowSafeTooltip>
-          </div>
-        </Fade>
-      </Box>
-    )
-  }
-
-  return (
-    <form action={action} style={{ display: 'flex', gap: 1 }}>
-      <TextField
-        name="quickCheck"
-        variant="outlined"
-        fullWidth
-        placeholder="Your translation..."
-        autoFocus
-        slotProps={{
-          // shrink the input
-          input: {
-            slotProps: {
-              input: {
-                sx: {
-                  py: 1,
-                  px: 2,
-                },
-              },
-            },
-          },
-        }}
-      />
-    </form>
-  )
-}
-
-interface AuthGuardProps {
-  children: React.ReactNode
-}
-
-const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
-  const user = useUser()
-
-  if (!user) {
-    return (
-      <>
-        <CardHeader title={<H6>Sign in to continue</H6>} />
-        <CardContent>
-          <LoginForm />
-        </CardContent>
-      </>
-    )
-  }
-
-  return <>{children}</>
-}

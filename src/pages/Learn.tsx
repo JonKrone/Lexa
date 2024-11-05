@@ -7,9 +7,9 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material'
-import { useQuery } from '@tanstack/react-query'
 import { FC } from 'react'
 import { Body2, Subtitle1 } from '../components/Typography'
+import { useUserPhrases } from '../queries/user-phrase'
 
 const fetchWords = async (): Promise<Word[]> => {
   return [
@@ -28,14 +28,8 @@ interface Word {
 interface Props {}
 
 export const Learn: FC<Props> = () => {
-  const {
-    data: words,
-    isLoading,
-    error,
-  } = useQuery<Word[]>({
-    queryKey: ['words'],
-    queryFn: fetchWords,
-  })
+  const { data, isLoading, error } = useUserPhrases()
+  const starredPhrases = data?.filter((p) => p.starred)
 
   if (isLoading)
     return (
@@ -54,21 +48,21 @@ export const Learn: FC<Props> = () => {
   return (
     <Box display="flex" flexDirection="column" gap={4}>
       <Typography variant="h5" color="textPrimary">
-        Words to Learn
+        Your Starred Phrases
       </Typography>
       <List disablePadding>
-        {words?.map((word) => (
-          <ListItem key={word.word} disablePadding>
+        {starredPhrases?.map((phrase) => (
+          <ListItem key={phrase.phrase_text} disablePadding>
             <ListItemText
               primary={
                 <Box display="flex" justifyContent="space-between">
-                  <Subtitle1 color="textPrimary">{word.word}</Subtitle1>
-                  <Body2 color="textSecondary">{word.partOfSpeech}</Body2>
+                  <Subtitle1 color="textPrimary">
+                    {phrase.phrase_text}
+                  </Subtitle1>
+                  <Body2 color="textSecondary">{phrase.mastery_level}</Body2>
                 </Box>
               }
-              secondary={
-                <Body2 color="textSecondary">{word.translation}</Body2>
-              }
+              secondary={<Body2 color="textSecondary">{'Translation'}</Body2>}
             />
           </ListItem>
         ))}

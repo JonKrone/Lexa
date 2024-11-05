@@ -7,7 +7,6 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { supabase } from '../config/supabase'
-import { OneFieldUpdate } from '../lib/types'
 import { useUser } from './auth'
 
 export type MasteryLevel =
@@ -26,6 +25,13 @@ export interface UserPhrase {
   last_seen?: string
   mastery_level: MasteryLevel
   created_at: string
+}
+
+export const MasteryLevelBreakpoints: Record<MasteryLevel, number> = {
+  New: 2, // 0-2 correct = New
+  Familiar: 7, // 3-7 correct = Familiar
+  Confident: 14, // 8-14 correct = Confident
+  Mastered: 15, // 15+ correct = Mastered
 }
 
 export const userPhraseQueries = {
@@ -59,7 +65,7 @@ export const useUserPhrase = (phraseText: string) => {
   return phrases?.find((p) => p.phrase_text === phraseText)
 }
 
-export type UpdatableUserPhrase = OneFieldUpdate<
+export type UpdatableUserPhrase = Partial<
   Omit<UserPhrase, 'user_id' | 'phrase_text' | 'created_at'>
 >
 
@@ -126,6 +132,7 @@ export const useCreateOrUpdateUserPhrase = () => {
         },
       )
 
+      // Store the previous phrases in the mutation context so we can rollback on error
       return { previousPhrases }
     },
     onError: (_err, _newPhrase, context) => {
@@ -172,6 +179,15 @@ export const useRecordPhraseSeen = () => {
       updateCachedUserPhrase(queryClient, user, data)
     },
   })
+}
+
+export const masteryLevelForTimesCorrect = (
+  timesCorrect: number,
+): MasteryLevel => {
+  if (timesCorrect <= MasteryLevelBreakpoints.New) return 'New'
+  if (timesCorrect <= MasteryLevelBreakpoints.Familiar) return 'Familiar'
+  if (timesCorrect <= MasteryLevelBreakpoints.Confident) return 'Confident'
+  return 'Mastered'
 }
 
 /** Updates the cached list of userPhrases with a new or updated item */

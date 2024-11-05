@@ -1,25 +1,34 @@
 import { Box, Popper } from '@mui/material'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Subtitle2 } from './Typography'
 
 interface ShadowSafeTooltipProps {
   title: React.ReactNode
   children: React.ReactNode
+  enterDelay?: number
 }
 
 export const ShadowSafeTooltip: React.FC<ShadowSafeTooltipProps> = ({
   title,
   children,
+  enterDelay = 0,
 }) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
   const [open, setOpen] = useState(false)
+  const enterTimeoutRef = useRef<number | null>(null)
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
-    setOpen(true)
+    enterTimeoutRef.current = window.setTimeout(() => {
+      setOpen(true)
+    }, enterDelay)
   }
 
   const handleMouseLeave = () => {
+    if (enterTimeoutRef.current) {
+      clearTimeout(enterTimeoutRef.current)
+      enterTimeoutRef.current = null
+    }
     setOpen(false)
   }
 
