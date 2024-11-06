@@ -6,6 +6,7 @@ import {
   CardContent,
   CardHeader,
   IconButton,
+  Skeleton,
   TextField,
   Typography,
   useTheme,
@@ -133,21 +134,6 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
           >
             {tabValue === 'details' && (
               <Box>
-                {/* <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    p: 1,
-                    bgcolor: 'rgba(255,255,255,0.05)',
-                    borderRadius: 1,
-                    mb: 2,
-                  }}
-                >
-                  <Body2 color="text.secondary">Mastery Level:</Body2>
-                  <Typography variant="body2">{masteryLevel}</Typography>
-                </Box> */}
-
                 <Typography
                   variant="subtitle1"
                   sx={{
@@ -160,37 +146,12 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
                   Other Ways to Say
                 </Typography>
                 <Box mb={2}>
-                  {details?.otherWaysToSay.map(
-                    ({ translation, explanation }) => (
-                      <Box
-                        key={translation}
-                        display="flex"
-                        flexDirection="column"
-                        gap={0.5}
-                        mb={1}
-                      >
-                        <Body2 color="secondary.main">{translation}</Body2>
-                        <Body2 pl={2} color="text.secondary">
-                          {explanation}
-                        </Body2>
-                      </Box>
-                    ),
-                  )}
+                  <OtherWaysToSay otherWaysToSay={details?.otherWaysToSay} />
                 </Box>
-
-                {/* <Box mb={2}>
-                  <Body2 color="secondary.main" fontWeight={500}>
-                    Antonyms
-                  </Body2>
-                  <Body2>{details?.antonyms.join(', ')}</Body2>
-                </Box> */}
-
                 <Subtitle1 mb={1} pb={0.5} borderBottom={borderStyle}>
-                  Cultural Insights
+                  Insights
                 </Subtitle1>
-                <Body2 color="text.secondary" lineHeight={1.6}>
-                  {details?.culturalInsights}
-                </Body2>
+                <Insights insights={details?.culturalInsights} />
               </Box>
             )}
 
@@ -281,3 +242,58 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
     )
   },
 )
+
+interface OtherWayToSay {
+  translation: string
+  explanation: string
+}
+
+const OtherWaysToSay = ({
+  otherWaysToSay,
+}: {
+  otherWaysToSay?: OtherWayToSay[]
+}) => {
+  if (!otherWaysToSay) {
+    return (
+      <>
+        {[1, 2].map((i) => (
+          <Box key={i} mb={2}>
+            <Skeleton variant="text" width="60%" height={24} />
+            <Skeleton variant="text" width="80%" height={20} />
+          </Box>
+        ))}
+      </>
+    )
+  }
+
+  return (
+    <>
+      {otherWaysToSay.map(({ translation, explanation }) => (
+        <Box
+          key={translation}
+          display="flex"
+          flexDirection="column"
+          gap={0.5}
+          mb={1}
+        >
+          <Body2 color="secondary.main">{translation}</Body2>
+          <Body2 pl={2} color="text.secondary">
+            {explanation}
+          </Body2>
+        </Box>
+      ))}
+    </>
+  )
+}
+
+const Insights = ({ insights }: { insights?: string }) => {
+  if (!insights) {
+    return <Skeleton variant="text" height={100} />
+  }
+
+  return (
+    <Body2 color="text.secondary" lineHeight={1.6}>
+      {insights}
+    </Body2>
+  )
+}

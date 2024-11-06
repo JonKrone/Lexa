@@ -1,4 +1,5 @@
 import { generateObject } from 'ai'
+import dedent from 'ts-dedent'
 import { z } from 'zod'
 import { Models } from './models'
 
@@ -19,7 +20,7 @@ const TranslationDetailsSchema = z.object({
       }),
     )
     .describe(
-      'Give brief alternative translations or simple phrases in easily understood terms, reflecting natural yet varied usage.',
+      'Give brief alternative target-language translations or simple phrases in easily understood terms, reflecting natural yet varied usage.',
     ),
   antonyms: z
     .array(z.string())
@@ -62,7 +63,7 @@ interface TranslationDetailsInputs {
 }
 
 export function makeTranslationDetailsPrompt(inputs: TranslationDetailsInputs) {
-  return `Generate useful metadata about a translated word or phrase to create an enriched, engaging language learning experience. This is especially aimed at novice learners who need exposure to alternative expressions and colloquialisms.
+  return dedent`Generate useful metadata about a translated word or phrase to create an enriched, engaging language learning experience. This is especially aimed at novice learners who need exposure to alternative expressions and colloquialisms.
 
 **Inputs:**
 - \`sourceLanguage\`: The source language of the original word or phrase.

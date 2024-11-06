@@ -37,6 +37,7 @@
     "react": "19.0.0-rc-e740d4b1-20240919",
     "react-dom": "19.0.0-rc-e740d4b1-20240919",
     "react-error-boundary": "^4.0.13",
+    "ts-dedent": "^2.2.0",
     "turndown": "^7.2.0",
     "wouter": "^3.3.5",
     "zod": "^3.23.8"

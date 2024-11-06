@@ -36,7 +36,7 @@ export const LexaListener: FC = () => {
       const markdown = htmlToMarkdown(document.body)
       console.log('Markdown:', { markdown })
 
-      if (false) {
+      if (true) {
         const result = await generatePageTranslations(markdown, userPreferences)
 
         for await (const translation of result.elementStream) {
