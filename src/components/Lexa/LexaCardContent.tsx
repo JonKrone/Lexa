@@ -17,7 +17,6 @@ import {
   LucideClipboardPenLine,
   LucideNotebook,
   MessageSquareQuote,
-  Settings,
   Star,
 } from 'lucide-react'
 import { FC, memo, useState } from 'react'
@@ -34,7 +33,7 @@ import { QuickCheckQuiz } from './QuickCheckQuiz'
 
 const borderStyle = '1.5px solid rgba(255,255,255,0.1)'
 
-type TabValue = 'details' | 'notes' | 'quiz'
+type TabValue = 'details' | 'notes' | 'quiz' | 'feedback'
 
 interface LexaCardContentProps {
   translation: string
@@ -134,8 +133,7 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
           >
             {tabValue === 'details' && (
               <Box>
-                <Typography
-                  variant="subtitle1"
+                <Subtitle1
                   sx={{
                     mb: 1,
                     pb: 0.5,
@@ -144,7 +142,7 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
                   }}
                 >
                   Other Ways to Say
-                </Typography>
+                </Subtitle1>
                 <Box mb={2}>
                   <OtherWaysToSay otherWaysToSay={details?.otherWaysToSay} />
                 </Box>
@@ -157,8 +155,7 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
 
             {tabValue === 'notes' && (
               <Box>
-                <Typography
-                  variant="subtitle1"
+                <Subtitle1
                   sx={{
                     mb: 2,
                     pb: 0.5,
@@ -167,7 +164,7 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
                   }}
                 >
                   Your Notes
-                </Typography>
+                </Subtitle1>
                 <TextField
                   variant="outlined"
                   fullWidth
@@ -181,15 +178,14 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
             )}
             {tabValue === 'quiz' && (
               <Box>
-                <Typography variant="subtitle1">Quick Quiz</Typography>
-                <Typography variant="body2">
-                  Quizzes are coming soon!
-                </Typography>
+                <Subtitle1>Quick Quiz</Subtitle1>
+                <Body2>Quizzes are coming soon!</Body2>
                 <Button variant="contained" sx={{ marginTop: 2 }}>
                   Start Quiz
                 </Button>
               </Box>
             )}
+            {tabValue === 'feedback' && <FeedbackPage />}
           </CardContent>
           <CardActions
             sx={{
@@ -204,6 +200,7 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
           >
             <ShadowSafeTooltip title="Details" enterDelay={500}>
               <IconButton
+                aria-label="Details"
                 onClick={handleTabChange('details')}
                 color={tabValue === 'details' ? 'secondary' : 'default'}
               >
@@ -212,6 +209,7 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
             </ShadowSafeTooltip>
             <ShadowSafeTooltip title="Notes" enterDelay={500}>
               <IconButton
+                aria-label="Notes"
                 onClick={handleTabChange('notes')}
                 color={tabValue === 'notes' ? 'secondary' : 'default'}
               >
@@ -220,6 +218,7 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
             </ShadowSafeTooltip>
             <ShadowSafeTooltip title="Quiz" enterDelay={500}>
               <IconButton
+                aria-label="Quiz"
                 onClick={handleTabChange('quiz')}
                 color={tabValue === 'quiz' ? 'secondary' : 'default'}
               >
@@ -227,13 +226,12 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
               </IconButton>
             </ShadowSafeTooltip>
             <ShadowSafeTooltip title="Feedback" enterDelay={500}>
-              <IconButton aria-label="feedback">
+              <IconButton
+                aria-label="Feedback"
+                onClick={handleTabChange('feedback')}
+                color={tabValue === 'feedback' ? 'secondary' : 'default'}
+              >
                 <MessageSquareQuote />
-              </IconButton>
-            </ShadowSafeTooltip>
-            <ShadowSafeTooltip title="Settings" enterDelay={500}>
-              <IconButton aria-label="settings">
-                <Settings />
               </IconButton>
             </ShadowSafeTooltip>
           </CardActions>
@@ -295,5 +293,19 @@ const Insights = ({ insights }: { insights?: string }) => {
     <Body2 color="text.secondary" lineHeight={1.6}>
       {insights}
     </Body2>
+  )
+}
+
+const FeedbackPage = () => {
+  return (
+    <Box>
+      <Box
+        component="form"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+      >
+        <TextField label="What's up?" multiline rows={4} />
+        <Button type="submit">Submit</Button>
+      </Box>
+    </Box>
   )
 }

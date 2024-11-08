@@ -1,4 +1,4 @@
-import { Box, useTheme } from '@mui/material'
+import { alpha, Box, useTheme } from '@mui/material'
 import React, { useEffect } from 'react'
 import { usePrefetchTranslationDetails } from '../../queries/translation-details'
 import { useRecordPhraseSeen } from '../../queries/user-phrase'
@@ -17,6 +17,7 @@ export const LexaRoot: React.FC<LexaRootProps> = ({
   context,
 }) => {
   const theme = useTheme()
+  console.log('theme', theme)
   const recordPhraseSeen = useRecordPhraseSeen()
   const prefetchTanslationDetails = usePrefetchTranslationDetails(
     original,
@@ -46,21 +47,17 @@ export const LexaRoot: React.FC<LexaRootProps> = ({
         component="span"
         sx={{
           display: 'inline-block',
-          borderRadius: '2px',
+          borderRadius: '4px',
           lineHeight: 'normal',
           position: 'relative',
           width: 'max-content',
           height: 'max-content',
           transition: 'all 250ms linear 0ms',
-          // boxShadow:
-          //   'rgba(202, 228, 237, 0.5) 2px 0px 0px 0px, rgba(202, 228, 237, 0.5) -2px 0px 0px 0px',
-          // backgroundColor: 'rgba(202, 228, 237, 0.5)',
-          boxShadow: `${theme.palette.primary.main} 2px 0px 0px 0px, ${theme.palette.primary.main} -2px 0px 0px 0px`,
-          backgroundColor: `${theme.palette.primary.main}`,
+          boxShadow: `${alpha(theme.palette.primary.main, 0.3)} 2px 0px 0px 0px, ${alpha(theme.palette.primary.main, 0.3)} -2px 0px 0px 0px`,
+          backgroundColor: alpha(theme.palette.primary.main, 0.3),
           cursor: 'pointer',
           '&:hover': {
-            // backgroundColor: 'rgba(202, 228, 237, 0.7)',
-            backgroundColor: 'rgba(128, 0, 128, 0.7)',
+            backgroundColor: alpha(theme.palette.primary.main, 0.7),
           },
         }}
       >
