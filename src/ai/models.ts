@@ -14,5 +14,11 @@ export const Models = {
     })('gpt-4o-2024-08-06', {
       structuredOutputs: true,
     }),
+    gpt4oAudio: createOpenAI({
+      compatibility: 'strict',
+      apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+    })('gpt-4o-audio-preview', {
+      structuredOutputs: true,
+    }),
   },
 }

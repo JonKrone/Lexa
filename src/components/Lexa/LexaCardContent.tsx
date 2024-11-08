@@ -29,6 +29,7 @@ import {
 import { ShadowSafeTooltip } from '../ShadowSafeTooltip'
 import { Body2, Subtitle1 } from '../Typography'
 import { LexaCardAuthGuard } from './LexaCardAuthGuard'
+import { PlayPhraseButton } from './PlayPhraseButton'
 import { QuickCheckQuiz } from './QuickCheckQuiz'
 
 const borderStyle = '1.5px solid rgba(255,255,255,0.1)'
@@ -119,6 +120,7 @@ export const LexaCardContent: FC<LexaCardContentProps> = memo(
                   original={original}
                   wordGender={details?.wordGender}
                 />
+                <PlayPhraseButton phrase={translation} />
               </>
             }
           />
