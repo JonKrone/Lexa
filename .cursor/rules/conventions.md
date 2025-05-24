@@ -1,0 +1,265 @@
+# Lexa Extension - Code Style & Development Conventions
+
+## Code Style and Structure
+
+### TypeScript Guidelines
+
+- Write concise, technical TypeScript code with accurate examples for Chrome extensions
+- Use TypeScript for all code; prefer interfaces over types
+- Avoid enums; use maps instead
+- Use functional components with TypeScript interfaces
+- Always define components with `FC<Props>`, and create a Props interface
+
+### Programming Patterns
+
+- Use functional and declarative programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
+- For unused variables, use underscore prefix (e.g., `_variableName`)
+
+### File Structure
+
+Structure files in this order:
+
+1. Exported component
+2. Subcomponents
+3. Helper functions
+4. Static content
+5. Types and interfaces
+
+### Component Patterns
+
+```typescript
+// Pattern: Standard functional component with props interface
+interface ExampleComponentProps {
+  title: string
+  isVisible: boolean
+  onAction: () => void
+}
+
+export const ExampleComponent: FC<ExampleComponentProps> = ({
+  title,
+  isVisible,
+  onAction,
+}) => {
+  // Component implementation
+  return <div>{title}</div>
+}
+```
+
+## Naming Conventions
+
+### Directories and Files
+
+- Use lowercase with dashes for directories (e.g., `components/word-list`)
+- Favor named exports for components
+- Use PascalCase for component files (e.g., `LexaListener.tsx`)
+- Use camelCase for utility files (e.g., `replaceTextSegments.ts`)
+
+### Variable and Function Naming
+
+- Use descriptive names that clearly indicate purpose
+- Boolean variables: `isLoading`, `hasError`, `canSubmit`
+- Event handlers: `onSubmit`, `onError`, `onSuccess`
+- Async functions: `fetchUserData`, `generateTranslations`
+
+## Syntax and Formatting
+
+### Function Declaration
+
+- Use the "function" keyword for pure functions
+- Use arrow functions for component definitions and callbacks
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements
+
+```typescript
+// Pure function
+function normalizeText(text: string): string {
+  return text.trim().toLowerCase()
+}
+
+// Component
+export const Component: FC<Props> = ({ children }) => (
+  <div>{children}</div>
+)
+```
+
+### JSX Patterns
+
+- Use declarative JSX
+- Prefer conditional rendering with logical operators
+- Keep JSX readable with proper indentation
+
+```typescript
+// Good: Declarative conditional rendering
+{isLoading && <LoadingSpinner />}
+{error ? <ErrorMessage error={error} /> : <Content data={data} />}
+```
+
+## UI and Styling Conventions
+
+### Material-UI Usage
+
+- Use existing MUI components for consistency
+- Implement responsive design considering Chrome extension popup dimensions
+- Leverage MUI's theme system for consistent styling
+
+### Extension-Specific UI Patterns
+
+- Use Shadow DOM for content script components to avoid style conflicts
+- Keep popup UI within standard extension dimensions (400px width max)
+- Design for both light and dark browser themes
+
+### Styling Guidelines
+
+```typescript
+// Pattern: MUI with emotion styling in Shadow DOM
+<ShadowDOM>
+  <ThemeProvider theme={theme}>
+    <Button
+      variant="contained"
+      sx={{
+        backgroundColor: 'primary.main',
+        '&:hover': { backgroundColor: 'primary.dark' },
+      }}
+    >
+      Action
+    </Button>
+  </ThemeProvider>
+</ShadowDOM>
+```
+
+## Performance Optimization
+
+### State Management
+
+- Minimize `useEffect` and `setState`; favor efficient state management
+- Use Tanstack Query for server state management
+- Leverage Chrome Storage API for extension-specific persistence
+
+### Code Splitting and Loading
+
+- Use `React.lazy` and `Suspense` for code-splitting where appropriate
+- Optimize asset loading, considering Chrome extension limitations
+- Implement proper loading states for async operations
+
+### Extension Performance
+
+- Optimize extension performance (load time, responsiveness)
+- Clean up event listeners and React roots on unmount
+- Use efficient DOM manipulation techniques
+
+```typescript
+// Pattern: Proper cleanup in useEffect
+useEffect(() => {
+  const cleanup = mountLexaListener()
+
+  return () => {
+    cleanup?.()
+  }
+}, [dependencies])
+```
+
+## Chrome Extension Specific Conventions
+
+### Extension Context Awareness
+
+- Use context detection functions (`isContentScript`, `isServiceWorker`, `isPopup`)
+- Adapt behavior based on execution environment
+- Handle extension lifecycle events properly
+
+### Message Passing
+
+- Use typed message interfaces for all extension communication
+- Implement proper error handling for message passing
+- Follow the established message pattern with type and payload
+
+```typescript
+// Pattern: Typed extension messages
+interface CustomMessage
+  extends ExtensionMessage<'CUSTOM_ACTION', { data: string }> {}
+
+onExtensionMessage<CustomMessage>('CUSTOM_ACTION', (payload) => {
+  // payload.data is properly typed as string
+})
+```
+
+### Storage Patterns
+
+- Use Chrome Storage API for extension preferences
+- Implement proper error handling for storage operations
+- Consider storage quotas and cleanup old data
+
+## Error Handling and Debugging
+
+### Error Boundaries
+
+- Wrap components in error boundaries, especially in content scripts
+- Provide fallback UI for error states
+- Log errors appropriately based on environment (`__DEBUG__` flag)
+
+### Debugging Patterns
+
+```typescript
+// Pattern: Environment-aware logging
+if (__DEBUG__) {
+  console.log('Debug info:', data)
+}
+
+// Pattern: Error isolation in extension context
+const root = ReactDOM.createRoot(element, {
+  onCaughtError(error) {
+    if (__DEBUG__) {
+      console.log('Extension caught error:', error)
+    }
+    // Don't pollute host page console
+  },
+})
+```
+
+## Data Flow and API Patterns
+
+### Tanstack Query Conventions
+
+- Use query keys consistently (`['auth', 'user']`, `['settings']`)
+- Implement proper error handling in queries
+- Use mutations for data modifications
+
+### Supabase Integration
+
+- Use generated types for database operations
+- Handle auth state changes properly
+- Implement real-time subscriptions where beneficial
+
+### AI Integration
+
+- Use structured output with Zod schemas
+- Implement streaming for better UX
+- Handle AI errors gracefully
+
+## Testing and Quality Assurance
+
+### Code Quality
+
+- Use ESLint for code consistency
+- Format code with Prettier
+- Write descriptive commit messages
+
+### Extension Testing
+
+- Test in different browser contexts (content script, popup, background)
+- Verify proper cleanup and memory management
+- Test extension permissions and security boundaries
+
+## Security Considerations
+
+### Content Script Security
+
+- Validate all data from host pages
+- Use Content Security Policy appropriately
+- Implement proper permission handling
+
+### Data Handling
+
+- Sanitize user input
+- Validate API responses with Zod schemas
+- Handle sensitive data (auth tokens) securely

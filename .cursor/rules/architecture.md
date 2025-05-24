@@ -1,0 +1,111 @@
+# Lexa Language Learning Extension - Architecture
+
+## Core Technology Stack
+
+### Primary Technologies
+
+- **TypeScript**: Strict typing throughout, prefer interfaces over types
+- **React 19 RC**: Functional components only, using FC<Props> pattern
+- **Vite**: Build tool with Chrome extension plugin (@crxjs/vite-plugin)
+- **Chrome Extension Manifest V3**: Service workers, content scripts, popup architecture
+
+### State Management & Data
+
+- **Tanstack Query v5**: Data fetching, caching, and synchronization
+- **Supabase**: Backend as a service with auth and database
+- **Chrome Storage API**: Extension-specific persistent storage
+- **React Query Persist Client**: Offline-capable data persistence
+
+### UI & Styling
+
+- **Material-UI (MUI) v6**: Component library with emotion-based styling
+- **Emotion**: CSS-in-JS with cache isolation for Shadow DOM
+- **Tailwind CSS**: Utility-first CSS framework
+- **Lucide React**: Icon library
+
+### AI & Content Processing
+
+- **Vercel AI SDK**: Streaming AI responses and structured output
+- **OpenAI GPT-4o Mini**: Primary AI model for translations
+- **Zod**: Schema validation for AI outputs and type safety
+- **Turndown**: HTML to Markdown conversion
+
+### Routing & Navigation
+
+- **Wouter**: Lightweight router for extension popup navigation
+
+## Project Structure
+
+```
+src/
+├── ai/                    # AI integration and models
+├── components/            # React components
+│   ├── Lexa/             # Core extension components
+│   └── [other-components] # UI components
+├── config/               # Configuration files
+├── lib/                  # Utility functions and helpers
+├── pages/                # Page components for popup
+├── queries/              # Tanstack Query hooks
+└── assets/               # Static assets
+```
+
+## Chrome Extension Architecture
+
+### Extension Components
+
+- **Background Script** (`background.ts`): Service worker for extension lifecycle
+- **Content Script** (`content.ts`): Injected into web pages for DOM manipulation
+- **Popup** (`main.tsx`): Extension popup interface
+- **Manifest V3**: Modern Chrome extension configuration
+
+### Build & Development
+
+- **Vite Configuration**: Optimized for Chrome extension development
+- **TypeScript Configuration**: Strict mode with path mapping
+- **ESLint**: Code quality and consistency
+- **Prettier**: Code formatting
+
+## Database Integration
+
+### Supabase Configuration
+
+- **Authentication**: User auth with OTP verification
+- **Database Types**: Auto-generated TypeScript types
+- **Real-time Subscriptions**: Live data updates
+
+### Data Patterns
+
+- **User Settings**: Language preferences, learning goals, proficiency levels
+- **User Phrases**: Saved translations and learning progress
+- **Ignored Sites**: User-configurable site exclusions
+
+## Development Environment
+
+### Scripts
+
+- `npm run dev`: Development server with HMR
+- `npm run build`: Production build for extension
+- `npm run db:types`: Generate database TypeScript types
+- `npm run db:push`: Deploy database changes
+
+### Environment Variables
+
+- Chrome extension environment detection
+- Debug mode configuration
+- Supabase connection settings
+
+## Performance Considerations
+
+### Extension Optimization
+
+- Lazy loading with React.Suspense
+- Efficient DOM manipulation
+- Minimal bundle size for content scripts
+- Proper cleanup of React roots and event listeners
+
+### Memory Management
+
+- Track and cleanup multiple React roots
+- Proper Shadow DOM isolation
+- Efficient text node processing
+- Background script resource management
