@@ -138,13 +138,20 @@ function findAndReplaceTextNode(textNodes: Text[], translation: ITranslation) {
 ### Real-Time Translation Streaming
 
 ```typescript
-// Pattern: Stream AI results directly into DOM
+// Pattern: Stream AI results directly into DOM using AI SDK v5
+import { generateObject } from 'ai'
+import { Models } from '@/ai/models'
+
 useEffect(() => {
   const doTranslations = async () => {
-    const result = await generatePageTranslations(markdown, userPreferences)
+    const result = await generateObject({
+      model: Models.openai.gpt41Mini, // Use latest models
+      schema: TranslationArraySchema,
+      prompt: `Translate these text segments: ${markdown}`,
+    })
 
-    // Stream translations as they arrive
-    for await (const translation of result.elementStream) {
+    // Process structured output
+    for (const translation of result.object) {
       replaceTextSegments(document.body, [translation])
     }
   }
@@ -153,24 +160,35 @@ useEffect(() => {
 }, [settings])
 ```
 
-### Structured AI Output
+### Structured AI Output with AI SDK v5
 
 ```typescript
-// Pattern: Use Zod schemas for AI output validation
+// Pattern: Use Zod schemas with AI SDK v5 provider pattern
+import { generateObject, streamObject } from 'ai'
+import { Models } from '@/ai/models'
+
 const TranslationSchema = z.object({
   original: z.string().describe('The exact text segment from the markdown.'),
   translation: z.string().describe('The translated text.'),
   context: z.string().describe('Surrounding text or sentence for reference.'),
 })
 
+// For streaming responses
 const result = await streamObject({
+  model: Models.openai.gpt41,
+  schema: z.array(TranslationSchema),
+  prompt: 'Translate these segments...',
+})
+
+// For immediate structured output
+const result = await generateObject({
+  model: Models.openai.gpt41Mini,
   schema: TranslationSchema,
-  output: 'array',
-  // ... other params
+  prompt: 'Translate this text...',
 })
 ```
 
-**Key Insight**: AI responses are streamed and validated, then immediately integrated into the DOM as they arrive.
+**Key Insight**: AI SDK v5 provides enhanced type safety with dedicated providers and supports both streaming and immediate structured outputs.
 
 ## Extension Context Detection Pattern
 

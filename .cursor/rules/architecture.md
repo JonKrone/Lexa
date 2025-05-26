@@ -25,10 +25,13 @@
 
 ### AI & Content Processing
 
-- **Vercel AI SDK**: Streaming AI responses and structured output
-- **OpenAI GPT-4o Mini**: Primary AI model for translations
+- **Vercel AI SDK v5 Alpha**: Next-generation streaming AI responses and structured output
+- **@ai-sdk/openai**: Dedicated OpenAI provider with enhanced type safety
+- **OpenAI GPT-4.1 & GPT-4o Audio**: Latest models for translations and audio processing
 - **Zod**: Schema validation for AI outputs and type safety
 - **Turndown**: HTML to Markdown conversion
+
+> **Reference**: [AI SDK v5 Alpha Announcement](https://ai-sdk.dev/docs/announcing-ai-sdk-5-alpha)
 
 ### Routing & Navigation
 

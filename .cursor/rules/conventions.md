@@ -232,9 +232,12 @@ const root = ReactDOM.createRoot(element, {
 
 ### AI Integration
 
-- Use structured output with Zod schemas
-- Implement streaming for better UX
-- Handle AI errors gracefully
+- Use AI SDK v5 alpha with the new provider pattern (`@ai-sdk/openai`)
+- Use structured output with Zod schemas for type safety
+- Implement streaming for better UX with `generateObject` and `streamObject`
+- Handle AI errors gracefully with proper error boundaries
+- Prefer the latest models (GPT-4.1, GPT-4o Audio) for enhanced capabilities
+- **Reference**: [AI SDK v5 Alpha Announcement](https://ai-sdk.dev/docs/announcing-ai-sdk-5-alpha)
 
 ## Testing and Quality Assurance
 
