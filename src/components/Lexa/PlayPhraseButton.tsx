@@ -108,7 +108,8 @@ const initializeAudioContext = (
   audioContextRef: React.MutableRefObject<AudioContext | null>,
 ) => {
   if (!audioContextRef.current) {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext
+    const AudioCtx =
+      window.AudioContext || (window as unknown as any).webkitAudioContext
     audioContextRef.current = new AudioCtx()
     console.log('AudioContext initialized')
   }

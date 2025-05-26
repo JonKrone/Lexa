@@ -5,17 +5,19 @@ interface ExtensionMessage<K extends string, T = unknown> {
   payload: T
 }
 
-export type IgnoredSitesChangedMessage = ExtensionMessage<
-  'IGNORED_SITES_CHANGED',
-  null
->
 export type SignInWithOtpMessage = ExtensionMessage<
   'OTP_VERIFIED',
   AuthResponse['data']
 >
+
 export type SignOutMessage = ExtensionMessage<'SIGN_OUT'>
 
-type ExtensionMessages =
+export type IgnoredSitesChangedMessage = ExtensionMessage<
+  'IGNORED_SITES_CHANGED',
+  null
+>
+
+export type ExtensionMessages =
   | SignInWithOtpMessage
   | SignOutMessage
   | IgnoredSitesChangedMessage
