@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Your Lexa Verification Code</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f8fafc;
+      color: #333333;
+    "
+  >
+    <!-- Main Container -->
+    <table
+      width="100%"
+      cellpadding="0"
+      cellspacing="0"
+      style="
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      "
+    >
+      <!-- Header -->
+      <tr>
+        <td
+          style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #667eea;
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+          "
+        >
+          <h1
+            style="
+              margin: 0 0 8px 0;
+              font-size: 32px;
+              font-weight: bold;
+              letter-spacing: -0.5px;
+            "
+          >
+            Lexa
+          </h1>
+          <p style="margin: 0; font-size: 16px; opacity: 0.9">
+            Learn a new language while browsing the web
+          </p>
+        </td>
+      </tr>
+
+      <!-- Content -->
+      <tr>
+        <td style="padding: 40px 30px">
+          <!-- Greeting -->
+          <h2
+            style="
+              margin: 0 0 16px 0;
+              font-size: 24px;
+              font-weight: 600;
+              color: #1a202c;
+            "
+          >
+            Your verification code is ready!
+          </h2>
+
+          <!-- Message -->
+          <p
+            style="
+              margin: 0 0 32px 0;
+              font-size: 16px;
+              color: #4a5568;
+              line-height: 1.7;
+            "
+          >
+            We received a request to sign in to your Lexa account. Enter the
+            verification code below in your Chrome extension to complete the
+            sign-in process.
+          </p>
+
+          <!-- OTP Code Container -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="margin: 32px 0"
+          >
+            <tr>
+              <td
+                style="
+                  background-color: #f7fafc;
+                  border: 2px solid #e2e8f0;
+                  border-radius: 8px;
+                  padding: 32px;
+                  text-align: center;
+                "
+              >
+                <p
+                  style="
+                    margin: 0 0 12px 0;
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #718096;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                  "
+                >
+                  VERIFICATION CODE
+                </p>
+
+                <!-- The OTP Code -->
+                <div
+                  style="
+                    font-size: 48px;
+                    font-weight: bold;
+                    color: #2d3748;
+                    letter-spacing: 8px;
+                    font-family: 'Courier New', monospace;
+                    margin: 16px 0;
+                    text-align: center;
+                  "
+                >
+                  {{ .Token }}
+                </div>
+
+                <p
+                  style="
+                    margin: 12px 0 0 0;
+                    font-size: 14px;
+                    color: #e53e3e;
+                    font-weight: 500;
+                  "
+                >
+                  ⏰ Expires in 60 minutes
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Instructions -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="margin: 24px 0"
+          >
+            <tr>
+              <td
+                style="
+                  background-color: #ebf8ff;
+                  border-left: 4px solid #3182ce;
+                  padding: 20px;
+                  border-radius: 0 8px 8px 0;
+                "
+              >
+                <h3
+                  style="
+                    margin: 0 0 8px 0;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #2c5282;
+                  "
+                >
+                  📋 How to use this code:
+                </h3>
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 14px;
+                    color: #2c5282;
+                    line-height: 1.6;
+                  "
+                >
+                  1. Return to your Lexa Chrome extension<br />
+                  2. Enter the 6-digit code above<br />
+                  3. You'll be automatically signed in
+                </p>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Security Notice -->
+          <table
+            width="100%"
+            cellpadding="0"
+            cellspacing="0"
+            style="margin: 24px 0"
+          >
+            <tr>
+              <td
+                style="
+                  background-color: #fffaf0;
+                  border: 1px solid #fed7aa;
+                  border-radius: 8px;
+                  padding: 20px;
+                "
+              >
+                <h3
+                  style="
+                    margin: 0 0 8px 0;
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #c05621;
+                  "
+                >
+                  🔒 Security Notice
+                </h3>
+                <p
+                  style="
+                    margin: 0;
+                    font-size: 14px;
+                    color: #9c4221;
+                    line-height: 1.6;
+                  "
+                >
+                  • Never share this code with anyone<br />
+                  • Lexa will never ask for this code via email or phone<br />
+                  • If you didn't request this code, please ignore this email
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td
+          style="
+            background-color: #f7fafc;
+            padding: 30px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+          "
+        >
+          <p style="margin: 0 0 16px 0; font-size: 14px; color: #718096">
+            This email was sent because you requested to sign in to Lexa.<br />
+            If you didn't make this request, you can safely ignore this email.
+          </p>
+          <p style="margin: 0; font-size: 12px; color: #a0aec0">
+            <a
+              href="#"
+              style="color: #667eea; text-decoration: none; margin: 0 8px"
+              >Privacy Policy</a
+            >
+            •
+            <a
+              href="#"
+              style="color: #667eea; text-decoration: none; margin: 0 8px"
+              >Terms of Service</a
+            >
+            •
+            <a
+              href="#"
+              style="color: #667eea; text-decoration: none; margin: 0 8px"
+              >Support</a
+            >
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

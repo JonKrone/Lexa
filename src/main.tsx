@@ -8,6 +8,15 @@ import { WholeAppErrorBoundary } from './components/WholeAppErrorBoundary'
 import { queryClient } from './config/react-query'
 import './index.css'
 import { onExtensionMessage, SignInWithOtpMessage } from './lib/extension'
+import { otpStorage } from './lib/otpStorage'
+
+// Debug helpers for development
+if (__DEBUG__) {
+  ;(window as any).lexaDebug = {
+    otpStorage,
+    queryClient,
+  }
+}
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

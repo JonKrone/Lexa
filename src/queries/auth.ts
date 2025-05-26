@@ -44,6 +44,67 @@ export const useSession = () =>
 
 export const useIsAuthenticated = () => useSession() !== undefined
 
+export const useSignInWithEmailOtp = () => {
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const { data, error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+        },
+      })
+
+      if (error) throw error
+      return data
+    },
+    meta: {
+      invalidates: '*',
+    },
+  })
+}
+
+export const useVerifyEmailOtp = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ email, token }: { email: string; token: string }) => {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email',
+      })
+
+      if (error) throw error
+
+      if (!data.user) {
+        throw new Error(
+          'No user found on successful OTP verification. Needs investigation.',
+        )
+      }
+
+      sendExtensionMessage({
+        type: 'OTP_VERIFIED',
+        payload: data,
+      })
+
+      // preload user and session data
+      queryClient.setQueryData(['auth', 'user'], {
+        data: data.user,
+        error: null,
+      })
+      queryClient.setQueryData(['auth', 'session'], {
+        data: data.session,
+        error: null,
+      })
+
+      return data
+    },
+    meta: {
+      invalidates: '*',
+    },
+  })
+}
+
+// Legacy magic link hooks - keeping for backward compatibility during migration
 export const useSignInWithOtp = () => {
   return useMutation({
     mutationFn: async (email: string) => {
