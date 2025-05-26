@@ -8,12 +8,42 @@ import {
   SignInWithOtpMessage,
   SignOutMessage,
 } from './lib/extension'
+import { logger } from './lib/logger'
 import { isCurrentSiteIgnored } from './lib/storage'
 
 console.log('Content script loaded')
 
 let unmountLexaListener: null | (() => void) = null
+
+async function checkAuthenticationAndMount() {
+  try {
+    // Check if user is authenticated before mounting
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession()
+
+    if (error) {
+      logger.log('Error getting session:', error)
+      return false
+    }
+
+    if (!session) {
+      logger.log('No active session found')
+      return false
+    }
+
+    logger.log('User is authenticated, proceeding with mount')
+    return true
+  } catch (error) {
+    logger.log('Authentication check failed:', error)
+    return false
+  }
+}
+
 async function initializeLexaExtension() {
+  logger.log('Initializing Lexa extension')
+
   const isIgnored = await isCurrentSiteIgnored()
 
   if (isIgnored) {
@@ -30,6 +60,14 @@ async function initializeLexaExtension() {
     if (__DEBUG__) {
       console.log('Lexa is active on this site')
     }
+  }
+
+  // Check authentication before mounting
+  const isAuthenticated = await checkAuthenticationAndMount()
+
+  if (!isAuthenticated) {
+    logger.log('User not authenticated, skipping LexaListener mount')
+    return
   }
 
   unmountLexaListener = mountLexaListener()

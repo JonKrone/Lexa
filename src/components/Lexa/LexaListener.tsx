@@ -4,6 +4,7 @@ import {
   GeneratePageTranslationsSettings,
 } from '../../ai/generatePageTranslations'
 import { htmlToMarkdown } from '../../lib/htmlToMarkdown'
+import { logger } from '../../lib/logger'
 import { replaceTextSegments } from '../../lib/replaceTextSegments'
 import { useSettings } from '../../queries/settings'
 import { useUserPhrases } from '../../queries/user-phrase'
@@ -13,13 +14,26 @@ import { useUserPhrases } from '../../queries/user-phrase'
  * translation process.
  */
 export const LexaListener: FC = () => {
-  const { data: settings } = useSettings()
-  const { data: userPhrases = [] } = useUserPhrases()
-  console.log('userPhrases', userPhrases)
+  const {
+    data: settings,
+    isLoading: settingsLoading,
+    error: settingsError,
+  } = useSettings()
+  const { data: _userPhrases = [], isLoading: phrasesLoading } =
+    useUserPhrases()
 
   useEffect(() => {
+    if (settingsLoading || phrasesLoading) return
+
+    if (settingsError) {
+      logger.log('Error loading settings:', settingsError)
+      return
+    }
+
     if (!settings) {
-      console.log('Lexa: You are not logged in. Not starting.')
+      logger.log(
+        'No settings found. User may not be logged in or settings not configured.',
+      )
       return
     }
 
@@ -34,12 +48,13 @@ export const LexaListener: FC = () => {
       }
 
       const markdown = htmlToMarkdown(document.body)
-      console.log('Markdown:', { markdown })
+      logger.log('Markdown:', { markdown })
 
       if (true) {
         const result = await generatePageTranslations(markdown, userPreferences)
 
         for await (const translation of result.elementStream) {
+          logger.log('translation:', translation)
           // Replace the text segments in the DOM
           replaceTextSegments(document.body, [translation])
         }
@@ -64,7 +79,7 @@ export const LexaListener: FC = () => {
     }
 
     doTranslations()
-  }, [settings])
+  }, [settings, settingsLoading, settingsError, phrasesLoading])
 
   return null
 }

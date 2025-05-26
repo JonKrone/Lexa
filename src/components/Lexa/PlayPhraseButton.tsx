@@ -3,7 +3,7 @@ import { Button } from '@mui/material'
 import OpenAI from 'openai'
 import { useRef, useState } from 'react'
 import dedent from 'ts-dedent'
-import { useSettings } from '../../queries/settings'
+import { useSettingsSuspense } from '../../queries/settings'
 
 // Initialize OpenAI once
 const openai = new OpenAI({
@@ -18,7 +18,7 @@ interface PlayPhraseButtonProps {
 
 // PlayPhraseButton Component
 export const PlayPhraseButton = ({ phrase }: PlayPhraseButtonProps) => {
-  const { data: settings } = useSettings()
+  const { data: settings } = useSettingsSuspense()
   const targetLanguage = settings?.target_language
 
   // Refs for AudioContext and AudioBuffer cache

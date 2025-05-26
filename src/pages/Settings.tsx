@@ -22,7 +22,7 @@ import { Caption, H5 } from '../components/Typography'
 import { Database } from '../config/database.types'
 import { debounce } from '../lib/utils'
 import { useSignOut } from '../queries/auth'
-import { useSettings, useUpdateSetting } from '../queries/settings'
+import { useSettingsSuspense, useUpdateSetting } from '../queries/settings'
 
 type LearningLevel = Database['public']['Enums']['learning_levels']
 
@@ -87,7 +87,7 @@ const AdvancedSettingsButton = () => {
 }
 
 const TargetLanguageField = () => {
-  const { data: settings } = useSettings()
+  const { data: settings } = useSettingsSuspense()
   const { mutate: updateSetting } = useUpdateSetting()
 
   return (
@@ -111,7 +111,7 @@ const TargetLanguageField = () => {
 }
 
 const LearningLevelField = () => {
-  const { data: settings } = useSettings()
+  const { data: settings } = useSettingsSuspense()
   const { mutate: updateSetting } = useUpdateSetting()
   const debouncedUpdateSetting = debounce(updateSetting, 350)
   const [currentLevel, setCurrentLevel] = React.useState<LearningLevel>(
@@ -163,7 +163,7 @@ const LearningLevelField = () => {
 }
 
 const LearningGoalsField = () => {
-  const { data: settings } = useSettings()
+  const { data: settings } = useSettingsSuspense()
   const { mutate: updateSetting } = useUpdateSetting()
   const debouncedUpdateSetting = debounce(updateSetting, 350)
 

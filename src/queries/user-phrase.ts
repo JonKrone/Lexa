@@ -3,6 +3,7 @@ import {
   QueryClient,
   queryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from '@tanstack/react-query'
@@ -55,8 +56,25 @@ export const userPhraseQueries = {
 }
 
 export const useUserPhrases = () => {
-  const user = useUser()
+  // Try to get user, but handle auth errors gracefully
+  let user: User | null = null
+  try {
+    user = useUser()
+  } catch (error) {
+    // Return a query that will not execute due to enabled: false
+    return useQuery({
+      queryKey: ['user_phrases'],
+      queryFn: () => [],
+      enabled: false,
+    })
+  }
 
+  return useQuery(userPhraseQueries.detail(user))
+}
+
+// Keep the suspense version for components that need it
+export const useUserPhrasesSuspense = () => {
+  const user = useUser()
   return useSuspenseQuery(userPhraseQueries.detail(user))
 }
 

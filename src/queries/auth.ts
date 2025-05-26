@@ -6,13 +6,14 @@ import {
 } from '@tanstack/react-query'
 import { supabase } from '../config/supabase'
 import { sendExtensionMessage } from '../lib/extension'
+import { logger } from '../lib/logger'
 
 const authQueries = {
   user: () =>
     queryOptions({
       queryKey: ['auth', 'user'],
       queryFn: async () => {
-        const { data, error } = await fetchUser()
+        const { data, error } = await supabase.auth.getUser()
         if (error) throw error
         return data
       },
@@ -21,16 +22,12 @@ const authQueries = {
     queryOptions({
       queryKey: ['auth', 'session'],
       queryFn: async () => {
-        const { data, error } = await fetchSession()
+        const { data, error } = await supabase.auth.getSession()
         if (error) throw error
         return data
       },
     }),
 }
-
-const fetchUser = () => supabase.auth.getUser()
-
-const fetchSession = () => supabase.auth.getSession()
 
 /** Should only be used where we've guaranteed the user is authenticated, i.e. by a guarded route */
 export const useUser = () => {
@@ -117,12 +114,12 @@ export const useSignOut = () => {
           payload: undefined,
         })
       } catch (error) {
-        console.error('Error sending SIGN_OUT message', error)
+        logger.error('Error sending SIGN_OUT message', error)
       }
 
       queryClient.clear()
       await queryClient.invalidateQueries()
-      console.log('signing out')
+      logger.log('signing out')
     },
     meta: {
       invalidates: '*',
