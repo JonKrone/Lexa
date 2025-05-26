@@ -2,16 +2,16 @@ import { createOpenAI } from '@ai-sdk/openai'
 
 export const Models = {
   openai: {
-    gpt4oMini: createOpenAI({
+    gpt41: createOpenAI({
       compatibility: 'strict',
       apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-    })('gpt-4o-mini-2024-07-18', {
+    })('gpt-4.1-2025-04-14', {
       structuredOutputs: true,
     }),
-    gpt4o: createOpenAI({
+    gpt41Mini: createOpenAI({
       compatibility: 'strict',
       apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-    })('gpt-4o-2024-08-06', {
+    })('gpt-4.1-mini-2025-04-14', {
       structuredOutputs: true,
     }),
     gpt4oAudio: createOpenAI({

@@ -13,9 +13,21 @@ export interface GeneratePageTranslationsSettings {
 }
 
 const TranslationSchema = z.object({
-  original: z.string().describe('The exact text segment from the markdown.'),
-  translation: z.string().describe('The translated text.'),
-  context: z.string().describe('Surrounding text or sentence for reference.'),
+  original: z
+    .string()
+    .describe(
+      'The exact text segment from the source content, character-perfect match with no modifications or additions.',
+    ),
+  translation: z
+    .string()
+    .describe(
+      'Natural, contextually appropriate translation in the target language that maintains the original meaning and tone.',
+    ),
+  context: z
+    .string()
+    .describe(
+      'Complete sentence or meaningful phrase containing the original text, providing sufficient context for understanding the usage and meaning.',
+    ),
 })
 
 export type ITranslation = z.infer<typeof TranslationSchema>
@@ -35,9 +47,9 @@ export async function generatePageTranslations(
   })
 
   const result = await streamObject({
-    model: Models.openai.gpt4oMini,
+    model: Models.openai.gpt41Mini,
     system:
-      'You are an assistant that helps users learn a language by translating select words or phrases in a given website text.',
+      'You are an expert language learning assistant specializing in contextual translation selection. Your role is to intelligently identify and translate words or phrases that will maximize learning value for users browsing web content.',
     prompt,
     output: 'array',
     schema: TranslationSchema,
@@ -65,43 +77,76 @@ function makeTranslationPrompt({
   pageTitle,
   url,
 }: TranslationPromptParams) {
-  return dedent`Generate a list of words or phrases to translate from a given markdown-formatted webpage.
+  return dedent`You are tasked with selecting optimal words and phrases for translation to enhance language learning while users browse web content.
 
-**User Preferences**:
-- **Target Language**: ${targetLanguage}
-- **Learning Goals**: ${learningGoals}
-- **Proficiency Level**: ${proficiencyLevel}
-- **Translation Density**: Aim to translate approximately one phrase per paragraph or up to ${translationDensityPercent}% of the total text.
-- **Webpage Title**: ${pageTitle}
-- **URL**: ${url}
+## Context Analysis
+**Webpage**: ${pageTitle}
+**URL**: ${url}
+**Target Language**: ${targetLanguage}
+**User Proficiency**: ${proficiencyLevel}
+**Learning Goals**: ${learningGoals}
+**Translation Density**: ~${translationDensityPercent}% of content (approximately one phrase per paragraph)
 
-**Translation Length Guidelines Based on Proficiency Level**:
-- **Beginner**: Translate simple single words or phrases of 2-3 words. Avoid difficult or complex vocabulary.
-- **Intermediate**: Translate more challenging words and longer phrases. Include some idiomatic expressions.
-- **Advanced**: Translate complex words and entire sentences. Focus on advanced vocabulary and nuanced phrases.
+## Selection Criteria by Proficiency Level
 
-**Important Instructions**:
-- **Do not translate any text within code blocks** (denoted by triple backticks \`\`\`), **inline code** (text enclosed in single backticks \`), or **markdown links** (e.g., [link text](url)).
-- **Do not translate text within markdown images**, blockquotes, tables, or any other special markdown elements.
-- **Only translate plain text** that is outside of these special markdown elements.
+### Beginner Level
+- **Primary Focus**: High-frequency vocabulary (top 1000-2000 words)
+- **Word Types**: Concrete nouns, basic verbs, common adjectives
+- **Phrase Length**: 1-3 words maximum
+- **Avoid**: Technical jargon, idioms, complex grammar structures
+- **Examples**: "house", "big car", "to eat"
 
-**Task**:
-1. Read the following markdown text.
-2. **Avoid translating any text within code blocks, inline code, links, images, blockquotes, tables, or other markdown formatting elements.**
-3. Based on the user's **Proficiency Level**, select appropriate words, phrases, or sentences to translate:
-   - For **Beginner**, focus on simple words and common phrases.
-   - For **Intermediate**, include more difficult words and longer phrases.
-   - For **Advanced**, select complex words and consider translating entire sentences.
-4. Ensure a mix of single words and phrases, with variability according to proficiency level.
-5. Follow the translation density guideline to avoid overwhelming the user.
-6. Focus on content that aligns with the user's proficiency level and learning goals.
-7. Translate the selected words or phrases into ${targetLanguage}.
-8. For each selection, provide:
-   - **original**: The exact text segment from the markdown.
-   - **translation**: The translated text.
-   - **context**: The exact surrounding text or sentence for reference.
+### Intermediate Level
+- **Primary Focus**: Mid-frequency vocabulary, common collocations
+- **Word Types**: Abstract concepts, phrasal verbs, descriptive phrases
+- **Phrase Length**: 2-5 words
+- **Include**: Some idiomatic expressions, compound terms
+- **Examples**: "take advantage of", "environmental impact", "user-friendly"
 
-<text_to_translate>
+### Advanced Level
+- **Primary Focus**: Low-frequency vocabulary, nuanced expressions
+- **Word Types**: Technical terms, sophisticated phrases, cultural references
+- **Phrase Length**: 3-8 words, including full clauses when valuable
+- **Include**: Complex idioms, professional terminology, subtle distinctions
+- **Examples**: "cutting-edge technology", "paradigm shift", "unprecedented circumstances"
+
+## Content Filtering Rules
+**CRITICAL**: Exclude ALL content within:
+- Code blocks (\`\`\`...\`\`\`)
+- Inline code (\`...\`)
+- URLs and links ([text](url))
+- Image alt text and captions
+- HTML/XML tags
+- Mathematical formulas
+- Navigation elements
+- Metadata and technical annotations
+
+## Learning Value Optimization
+Prioritize selections that:
+1. **Align with learning goals**: Match stated objectives (business, travel, academic, etc.)
+2. **Build vocabulary progressively**: Connect to previously learned concepts
+3. **Provide cultural context**: Include culturally significant terms when relevant
+4. **Enhance comprehension**: Focus on words that unlock meaning of surrounding text
+5. **Encourage retention**: Select memorable, useful phrases over obscure terms
+
+## Quality Assurance
+For each selection, ensure:
+- **Accuracy**: Exact text match from source material
+- **Relevance**: Appropriate for user's proficiency level
+- **Context**: Sufficient surrounding text for understanding
+- **Utility**: High learning value for stated goals
+- **Density**: Maintain target percentage without overwhelming
+
+## Output Requirements
+For each selected phrase, provide:
+- **original**: Exact text segment from the markdown (character-perfect match)
+- **translation**: Natural, contextually appropriate translation in ${targetLanguage}
+- **context**: Complete sentence or meaningful phrase containing the original text
+
+## Source Content
+<content>
 ${textToTranslate}
-</text_to_translate>`
+</content>
+
+Analyze the content systematically and select translations that will create an optimal learning experience for this ${proficiencyLevel} level ${targetLanguage} learner.`
 }
