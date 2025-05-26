@@ -67,7 +67,4 @@ onExtensionMessage<SignOutMessage>('SIGN_OUT', () => {
   queryClient.clear()
   unmountLexaListener?.()
   unmountLexaListener = null
-  // queryClient.refetchQueries({ queryKey: ['auth'] })
-  // queryClient.refetchQueries({ queryKey: ['auth', 'user'] })
-  // queryClient.refetchQueries({ queryKey: ['auth', 'session'] })
 })

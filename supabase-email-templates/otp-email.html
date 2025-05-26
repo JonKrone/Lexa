@@ -220,7 +220,21 @@
         <!-- OTP Code Section -->
         <div class="otp-container">
           <div class="otp-label">Verification Code</div>
-          <div class="otp-code">{{ .Token }}</div>
+          <div
+            class="otp-code"
+            style="
+              user-select: all;
+              -webkit-user-select: all;
+              -moz-user-select: all;
+              cursor: text;
+              border: 2px dashed #cbd5e0;
+              padding: 16px;
+              border-radius: 8px;
+              background-color: #ffffff;
+            "
+          >
+            {{ .Token }}
+          </div>
           <div class="otp-validity">⏰ Expires in 60 minutes</div>
         </div>
 
