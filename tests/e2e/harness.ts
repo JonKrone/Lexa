@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs'
+import { glob } from 'glob'
 import path from 'path'
 import { Page } from 'puppeteer'
 
@@ -86,6 +87,22 @@ export const mockAuthenticationAndSettings = async (
 }
 
 /**
+ * Find the actual content script file in the dist directory
+ */
+const findContentScriptPath = (): string => {
+  // Search for content script files in the assets directory
+  const matches = glob.sync('dist/assets/content.ts-*.js')
+
+  if (matches.length > 0) {
+    return path.resolve(matches[0])
+  }
+
+  throw new Error(
+    'Could not find content script file. Expected it in dist/assets/content.ts-*.js',
+  )
+}
+
+/**
  * Inject the content script and let it run naturally with mocked dependencies
  */
 export const loadContentScriptWithMocks = async (
@@ -96,8 +113,8 @@ export const loadContentScriptWithMocks = async (
   await mockChromeAPIs(page)
   await mockAuthenticationAndSettings(page, testTranslations)
 
-  // Read and modify the content script to use our mocks
-  const contentScriptPath = path.resolve('dist/src/content.ts.js')
+  // Find and read the content script
+  const contentScriptPath = findContentScriptPath()
   let contentScript = readFileSync(contentScriptPath, 'utf-8')
 
   // Inject our mocks into the content script
