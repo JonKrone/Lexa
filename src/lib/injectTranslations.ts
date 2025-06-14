@@ -12,7 +12,7 @@ import { mountLexaRoot } from '../components/Lexa/mountLexaRoot'
 import { logger } from './logger'
 import { observer } from './mutationObserver'
 
-/** Internal cache to avoid mounting twice on the same element */
+/** Internal cache to avoid mounting twice on the same element. Particularly useful for SPA-apps */
 const processed = new WeakSet<Element>()
 
 /** Re‑usable Mark instance so incremental calls are cheap */
