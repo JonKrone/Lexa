@@ -107,17 +107,6 @@ export const loadContentScriptWithMocks = async (
       window.supabase = window.__SUPABASE_MOCK__;
     }
 
-    // Override React Query to return mock data
-    if (window.__MOCK_QUERY_DATA__) {
-      const originalQueryClient = window.queryClient;
-      if (originalQueryClient) {
-        originalQueryClient.setQueryData(['settings'], window.__MOCK_QUERY_DATA__.settings);
-        originalQueryClient.setQueryData(['user-phrases'], window.__MOCK_QUERY_DATA__.userPhrases);
-        originalQueryClient.setQueryData(['auth', 'user'], { user: { id: 'test-user' } });
-        originalQueryClient.setQueryData(['auth', 'session'], { session: { access_token: 'mock-token' } });
-      }
-    }
-
     // Override the generatePageTranslations function
     if (window.__MOCK_AI_TRANSLATIONS__ && window.mockGeneratePageTranslations) {
       window.generatePageTranslations = function(markdown, settings) {
@@ -189,7 +178,5 @@ export const triggerTranslationFlow = async (page: Page): Promise<void> => {
 
 // Helper to use setTimeout in Puppeteer
 export const waitForTimeout = async (page: Page, ms: number): Promise<void> => {
-  await page.evaluate((ms) => {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-  }, ms)
+  await (page as any).waitForTimeout(ms)
 }
