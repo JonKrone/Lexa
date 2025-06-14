@@ -3,6 +3,8 @@ import { Providers } from '../Providers'
 import { ShadowDOM } from '../ShadowDOM'
 import { LexaRoot, LexaRootProps } from './LexaRoot'
 
+export const LEXA_ROOT_CLASS = 'lexa-root-node'
+
 interface LexaRootWrapper {
   root: ReactDOM.Root
   originalText: string
@@ -31,7 +33,7 @@ export function mountLexaRoot(range: Range, translation: LexaRootProps): void {
   const customElement = document.createElement('span')
   customElement.textContent = translation.translation
   customElement.dataset.originalText = translation.original
-  customElement.classList.add('lexa-root-node')
+  customElement.classList.add(LEXA_ROOT_CLASS)
 
   customElement.style.display = 'inline-block'
   // customElement.style.all = 'unset'

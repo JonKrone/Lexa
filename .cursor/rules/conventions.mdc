@@ -1,3 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
 # Lexa Extension - Code Style & Development Conventions
 
 ## Code Style and Structure
@@ -237,7 +243,7 @@ const root = ReactDOM.createRoot(element, {
 - Implement streaming for better UX with `generateObject` and `streamObject`
 - Handle AI errors gracefully with proper error boundaries
 - Prefer the latest models (GPT-4.1, GPT-4o Audio) for enhanced capabilities
-- **Reference**: [AI SDK v5 Alpha Announcement](https://ai-sdk.dev/docs/announcing-ai-sdk-5-alpha)
+- **Reference**: [AI SDK v5 Alpha Announcement](mdc:https:/ai-sdk.dev/docs/announcing-ai-sdk-5-alpha)
 
 ## Testing and Quality Assurance
 

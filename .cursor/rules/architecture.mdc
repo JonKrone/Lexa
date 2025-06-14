@@ -1,3 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
 # Lexa Language Learning Extension - Architecture
 
 ## Core Technology Stack
@@ -31,7 +37,7 @@
 - **Zod**: Schema validation for AI outputs and type safety
 - **Turndown**: HTML to Markdown conversion
 
-> **Reference**: [AI SDK v5 Alpha Announcement](https://ai-sdk.dev/docs/announcing-ai-sdk-5-alpha)
+> **Reference**: [AI SDK v5 Alpha Announcement](mdc:https:/ai-sdk.dev/docs/announcing-ai-sdk-5-alpha)
 
 ### Routing & Navigation
 

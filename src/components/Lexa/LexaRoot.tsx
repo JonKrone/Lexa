@@ -17,7 +17,6 @@ export const LexaRoot: React.FC<LexaRootProps> = ({
   context,
 }) => {
   const theme = useTheme()
-  console.log('theme', theme)
   const recordPhraseSeen = useRecordPhraseSeen()
   const prefetchTanslationDetails = usePrefetchTranslationDetails(
     original,
