@@ -1,4 +1,4 @@
-const observer = new MutationObserver((mutations) => {
+export const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     if (mutation.type === 'childList') {
       mutation.addedNodes.forEach((node) => {

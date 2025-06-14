@@ -5,7 +5,9 @@ import {
 } from '../../ai/generatePageTranslations'
 import { htmlToMarkdown } from '../../lib/htmlToMarkdown'
 import { logger } from '../../lib/logger'
-import { replaceTextSegments } from '../../lib/replaceTextSegments'
+// import { replaceTextSegments } from '../../lib/replaceTextSegments'
+
+import { injectTranslations } from '../../lib/injectTranslations'
 import { useSettings } from '../../queries/settings'
 import { useUserPhrases } from '../../queries/user-phrase'
 
@@ -53,20 +55,24 @@ export const LexaListener: FC = () => {
       if (true) {
         const result = await generatePageTranslations(markdown, userPreferences)
 
+        // for await (const translation of result.elementStream) {
+        //   logger.log('translation:', translation)
+        //   // Replace the text segments in the DOM
+        //   replaceTextSegments(document.body, [translation])
+        // }
         for await (const translation of result.elementStream) {
-          logger.log('translation:', translation)
-          // Replace the text segments in the DOM
-          replaceTextSegments(document.body, [translation])
+          // collected.push(translation)
+          injectTranslations([translation]) // batch‑inject after GPT finishes
         }
       } else {
-        replaceTextSegments(document.body, [
-          {
-            original: 'host page',
-            translation: 'página anfitriona',
-            context:
-              'The page where the script runs is called the **host page**.',
-          },
-        ])
+        // replaceTextSegments(document.body, [
+        //   {
+        //     original: 'host page',
+        //     translation: 'página anfitriona',
+        //     context:
+        //       'The page where the script runs is called the **host page**.',
+        //   },
+        // ])
         // replaceTextSegments(document.body, [
         //   {
         //     original: 'create our root element',
