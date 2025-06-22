@@ -1,11 +1,11 @@
 import { LexaListener } from './LexaListener'
+import { LexaOverlayManager } from './LexaOverlayManager'
 
 import { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
 import { logger } from '../../lib/logger'
 import { Providers } from '../Providers'
 import { WholeAppErrorBoundary } from '../WholeAppErrorBoundary'
-import { unmountLexaRoots } from './mountLexaRoot'
 
 export const mountLexaListener = () => {
   const customElement = document.createElement('div')
@@ -30,6 +30,7 @@ export const mountLexaListener = () => {
       <Providers>
         <Suspense fallback={<div>Loading...</div>}>
           <LexaListener />
+          <LexaOverlayManager />
         </Suspense>
       </Providers>
     </WholeAppErrorBoundary>,
@@ -38,6 +39,5 @@ export const mountLexaListener = () => {
   return () => {
     logger.log('Unmounting LexaListener')
     root.unmount()
-    unmountLexaRoots()
   }
 }

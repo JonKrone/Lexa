@@ -8,7 +8,6 @@
 
 import Mark from 'mark.js'
 import { ITranslation } from '../ai/generatePageTranslations'
-import { mountLexaRoot } from '../components/Lexa/mountLexaRoot'
 import { logger } from './logger'
 import { observer } from './mutationObserver'
 
@@ -50,11 +49,10 @@ export function injectTranslations(translations: ITranslation[]) {
         element.textContent = t.translation
         element.setAttribute('data-original-text', t.original)
 
-        // Build a Range that covers <span> so existing mountLexaRoot still works
-        const range = document.createRange()
-        range.selectNodeContents(element)
-
-        mountLexaRoot(range, t)
+        // Register the anchor with the overlay manager
+        if (window.__lexaRegisterAnchor) {
+          window.__lexaRegisterAnchor(element, t)
+        }
       },
     })
   })
