@@ -3,7 +3,6 @@ import React, { useEffect } from 'react'
 import { usePrefetchTranslationDetails } from '../../queries/translation-details'
 import { useRecordPhraseSeen } from '../../queries/user-phrase'
 import { HoverCard } from '../HoverCard'
-import { Providers } from '../Providers'
 import { ShadowDOM } from '../ShadowDOM'
 import { LexaCardContent } from './LexaCardContent'
 
@@ -35,39 +34,37 @@ export const TranslationAnchor: React.FC<TranslationAnchorProps> = ({
 
   return (
     <ShadowDOM as="span">
-      <Providers>
-        <HoverCard
-          onHover={prefetchTanslationDetails}
-          content={
-            <LexaCardContent
-              translation={translation}
-              original={original}
-              context={context}
-            />
-          }
+      <HoverCard
+        onHover={prefetchTanslationDetails}
+        content={
+          <LexaCardContent
+            translation={translation}
+            original={original}
+            context={context}
+          />
+        }
+      >
+        <Box
+          component="span"
+          sx={{
+            display: 'inline-block',
+            borderRadius: '4px',
+            lineHeight: 'normal',
+            position: 'relative',
+            width: 'max-content',
+            height: 'max-content',
+            transition: 'all 250ms linear 0ms',
+            boxShadow: `${alpha(theme.palette.primary.main, 0.3)} 2px 0px 0px 0px, ${alpha(theme.palette.primary.main, 0.3)} -2px 0px 0px 0px`,
+            backgroundColor: alpha(theme.palette.primary.main, 0.3),
+            cursor: 'pointer',
+            '&:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.7),
+            },
+          }}
         >
-          <Box
-            component="span"
-            sx={{
-              display: 'inline-block',
-              borderRadius: '4px',
-              lineHeight: 'normal',
-              position: 'relative',
-              width: 'max-content',
-              height: 'max-content',
-              transition: 'all 250ms linear 0ms',
-              boxShadow: `${alpha(theme.palette.primary.main, 0.3)} 2px 0px 0px 0px, ${alpha(theme.palette.primary.main, 0.3)} -2px 0px 0px 0px`,
-              backgroundColor: alpha(theme.palette.primary.main, 0.3),
-              cursor: 'pointer',
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.7),
-              },
-            }}
-          >
-            {translation}
-          </Box>
-        </HoverCard>
-      </Providers>
+          {translation}
+        </Box>
+      </HoverCard>
     </ShadowDOM>
   )
 }
