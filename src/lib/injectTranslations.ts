@@ -44,9 +44,9 @@ export function injectTranslations(translations: ITranslation[]) {
 
         processed.add(element)
 
-        // mark.js keeps the **original** text inside <span>.  We want to show the
-        // translation, so we replace the textContent before mounting React.
-        element.textContent = t.translation
+        // mark.js keeps the **original** text inside <span>. We'll let the portal
+        // handle rendering the translation text, so we clear the textContent.
+        element.textContent = ''
         element.setAttribute('data-original-text', t.original)
 
         // Register the anchor with the overlay manager

@@ -65,13 +65,15 @@ export const HoverCard: React.FC<HoverCardProps> = ({
 
   return (
     <ClickAwayListener onClickAway={handleClickAway}>
-      <div className="lexa-click-away-listener">
+      <span className="lexa-click-away-listener">
         <Box
+          component="span"
           className="lexa-hover-card-anchor"
           ref={anchorRef}
           onClick={handleClick}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          sx={{ display: 'inline' }}
         >
           {children}
         </Box>
@@ -90,7 +92,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({
         >
           <ShadowDOM>{content}</ShadowDOM>
         </Popper>
-      </div>
+      </span>
     </ClickAwayListener>
   )
 }

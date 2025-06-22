@@ -1,56 +1,47 @@
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
-import { ThemeProvider } from '@mui/material'
-import React, { useEffect, useRef } from 'react'
-import ReactDOM from 'react-dom/client'
-import { theme } from '../config/theme'
-
-const cacheCache = new Map()
+import React, { useLayoutEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 interface ShadowDOMProps {
   children: React.ReactNode
-  as?: 'div' | 'span'
 }
 
-export const ShadowDOM: React.FC<ShadowDOMProps> = ({
-  children,
-  as = 'span',
-}) => {
-  const hostRef = useRef<HTMLDivElement | null>(null)
+// Cache emotion caches per shadow root
+const cacheMap = new WeakMap<ShadowRoot, ReturnType<typeof createCache>>()
 
-  useEffect(() => {
-    if (!hostRef.current) return
+export const ShadowDOM: React.FC<ShadowDOMProps> = ({ children }) => {
+  const hostRef = useRef<HTMLSpanElement>(null)
+  const shadowRootRef = useRef<ShadowRoot | null>(null)
 
-    const shadowRoot =
-      hostRef.current.shadowRoot ??
-      hostRef.current.attachShadow({ mode: 'open' })
+  useLayoutEffect(() => {
+    if (!hostRef.current || shadowRootRef.current) return
 
-    if (!cacheCache.has(shadowRoot)) {
+    // Create shadow root
+    shadowRootRef.current = hostRef.current.attachShadow({ mode: 'open' })
+
+    // Create or get emotion cache for this shadow root
+    if (!cacheMap.has(shadowRootRef.current)) {
       const cache = createCache({
-        key: 'shadow-styles',
+        key: 'lexa',
+        container: shadowRootRef.current,
         prepend: true,
-        container: shadowRoot,
       })
-      cacheCache.set(shadowRoot, cache)
+      cacheMap.set(shadowRootRef.current, cache)
     }
+  }, [])
 
-    const reactDOMRoot = ReactDOM.createRoot(shadowRoot)
-    reactDOMRoot.render(
-      <CacheProvider value={cacheCache.get(shadowRoot)}>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
-      </CacheProvider>,
-    )
+  const shadowRoot = shadowRootRef.current
+  const cache = shadowRoot ? cacheMap.get(shadowRoot) : null
 
-    return () => {
-      hostRef.current = null
-      setTimeout(() => {
-        reactDOMRoot.unmount()
-      })
-    }
-  }, [children])
-
-  return React.createElement(as, {
-    className: 'lexa-shadow-root',
-    ref: hostRef,
-  })
+  return (
+    <span ref={hostRef} className="lexa-shadow-root">
+      {shadowRoot &&
+        cache &&
+        createPortal(
+          <CacheProvider value={cache}>{children}</CacheProvider>,
+          shadowRoot,
+        )}
+    </span>
+  )
 }
