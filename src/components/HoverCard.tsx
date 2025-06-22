@@ -1,5 +1,6 @@
 import { Box, ClickAwayListener, Popper } from '@mui/material'
-import React, { ReactElement, useEffect, useRef, useState } from 'react'
+import React, { ReactElement, useEffect, useId, useRef } from 'react'
+import { useActiveHoverCardId } from '../lib/store/hover-card'
 import { ShadowWrapper } from './ShadowWrapper'
 
 const HOVER_DELAY = 350
@@ -15,7 +16,10 @@ export const HoverCard: React.FC<HoverCardProps> = ({
   content,
   children,
 }) => {
-  const [isOpen, setIsOpen] = useState(false)
+  const id = useId()
+  const { activeId, setActiveId } = useActiveHoverCardId()
+  const isOpen = activeId === id
+
   const anchorRef = useRef<HTMLDivElement | null>(null)
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -23,7 +27,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({
     onHover()
 
     hoverTimerRef.current = setTimeout(() => {
-      setIsOpen(true)
+      setActiveId(id)
     }, HOVER_DELAY)
   }
 
@@ -39,16 +43,16 @@ export const HoverCard: React.FC<HoverCardProps> = ({
       clearTimeout(hoverTimerRef.current)
       hoverTimerRef.current = null
     }
-    setIsOpen((prev) => !prev)
+    setActiveId(isOpen ? null : id)
   }
 
   const handleClickAway = () => {
-    setIsOpen(false)
+    isOpen && setActiveId(null)
   }
 
   const handleEscapeKey = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      setIsOpen(false)
+    if (event.key === 'Escape' && isOpen) {
+      setActiveId(null)
     }
   }
 
